@@ -1,7 +1,11 @@
 from amzn_parser_constants import ORIGIN_COUNTRY_CRITERIAS, CATEGORY_CRITERIAS
+from datetime import datetime
+import platform
 import logging
 import sys
 import os
+
+import openpyxl
 
 # GLOBAL VARIABLES
 VBA_ERROR_ALERT = 'ERROR_CALL_DADDY'
@@ -65,6 +69,53 @@ def recreate_txt_file(abs_fpath:str, binary_data):
             f.write(binary_data)
     except TypeError:
         print(f'Expected binary when writing contents to file {abs_fpath}')
+
+def is_windows_machine() -> bool:
+    '''returns True if machine executing the code is Windows based'''
+    machine_os = platform.system()
+    return True if machine_os == 'Windows' else False
+
+def orders_column_to_file(orders:list, dict_key:str):
+    '''exports a column values of each orders list item for passed dict_key'''
+    try:
+        export_data = [order[dict_key] for order in orders]
+        with open(f'export {dict_key}.txt', 'w', encoding='utf-8', newline='\n') as f:
+            f.writelines('\n'.join(export_data))
+        print(f'Data exported to: {os.path.dirname(os.path.abspath(__file__))} folder')
+    except KeyError:
+        print(f'Provided {dict_key} does not exist in passed orders list of dicts')
+
+def alert_vba_date_count(filter_date, orders_count):
+    '''Passing two variables for VBA to display for user in message box'''
+    print(f'FILTER_DATE_USED: {filter_date}')
+    print(f'SKIPPING_ORDERS_COUNT: {orders_count}')
+
+def get_datetime_obj(date_str):
+    '''returns tz-naive datetime obj from date string. Designed to work with str format: 2020-04-16T10:07:16+00:00'''
+    try:
+        return datetime.fromisoformat(date_str).replace(tzinfo=None)
+    except ValueError:
+        # Attempt to handle wrong/new date format here
+        logging.warning(f'Change in format detected! Previous format: 2020-04-16T10:07:16+00:00. Current: {date_str} Attempting to parse string...')
+        try:
+            date_str_split = date_str.split('T')[0]
+            return datetime.fromisoformat(date_str_split)
+        except ValueError:
+            logging.critical(f'Unable to create datetime from date string: {date_str}. Terminating.')
+            print(VBA_ERROR_ALERT)
+            sys.exit()
+
+# def create_wb():
+#     '''creates a workbook from thin air'''
+#     wb = openpyxl.Workbook()
+#     ws = wb.active
+#     ws.title = 'Summary'
+#     ws1 = wb.create_sheet(title='1')
+#     ws2 = wb.create_sheet(title='2')
+#     ws3 = wb.create_sheet(title='buvo 3',index=0)
+#     ws3.cell(1,3).value = 'labas, as C1 celle'
+#     wb.save('summary.xlsx')
+
 
 
 if __name__ == "__main__":
