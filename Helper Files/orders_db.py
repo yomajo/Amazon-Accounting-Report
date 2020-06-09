@@ -53,13 +53,20 @@ class OrdersDB:
 
         try:
             with self.con:
-                self.con.execute('''CREATE TABLE orders (order_id TEXT PRIMARY KEY,
+                self.con.execute('''CREATE TABLE orders (order_id TEXT,
+                                                order_item_id TEXT,
                                                 purchase_date TEXT,
                                                 payments_date TEXT,
                                                 buyer_name TEXT NOT NULL,
+                                                quantity INTEGER,
+                                                item_price DECIMAL,
+                                                item_tax DECIMAL,
+                                                shipping_price DECIMAL,
+                                                shipping_tax DECIMAL,
                                                 last_update TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
                                                 date_added TEXT NOT NULL,
                                                 run INTEGER NOT NULL,
+                                                PRIMARY KEY (order_id, order_item_id),
                                                 FOREIGN KEY (run) REFERENCES program_runs (id) ON DELETE CASCADE);''')
         except sqlite3.OperationalError as e:
             logging.debug(f'orders table already created. Error: {e}')
