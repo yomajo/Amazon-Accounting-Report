@@ -69,6 +69,7 @@ def remove_todays_orders(orders:list) -> list :
         sys.exit()
 
 def parse_args():
+    '''accepts txt_path from as command line argument'''
     if len(sys.argv) == EXPECTED_SYS_ARGS:
         txt_path = sys.argv[1]
         logging.info(f'Accepted sys args on launch: txt_path: {txt_path}')
