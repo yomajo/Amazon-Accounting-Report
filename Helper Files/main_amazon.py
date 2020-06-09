@@ -1,5 +1,5 @@
+from amzn_parser_utils import get_output_dir, get_datetime_obj, alert_vba_date_count
 from etonas_xlsx_exporter import EtonasExporter
-from amzn_parser_utils import get_output_dir
 from parse_orders import ParseOrders
 from orders_db import OrdersDB
 from datetime import datetime
@@ -8,17 +8,19 @@ import sys
 import csv
 import os
 
+from amzn_parser_utils import orders_column_to_file
 
 # GLOBAL VARIABLES
-TESTING = False
+TESTING = True
+TEST_TODAY_DATE = '2020-04-17'
 EXPECTED_SYS_ARGS = 2
 VBA_ERROR_ALERT = 'ERROR_CALL_DADDY'
 VBA_KEYERROR_ALERT = 'ERROR_IN_SOURCE_HEADERS'
 VBA_OK = 'EXPORTED_SUCCESSFULLY'
-TEST_AMZN_EXPORT_TXT = r'C:\Coding\Amazon Orders Parser\Amazon exports\sample_amzn_export.txt'
+TEST_AMZN_EXPORT_TXT = r'/home/devyo/Coding/Git/Amazon Accounting Report/Amazon exports/run1.txt'
 
 # Logging config:
-log_path = os.path.join(get_output_dir(client_file=False), 'loading_amazon_orders.log')
+log_path = os.path.join(get_output_dir(client_file=False), 'amazon_accounting.log')
 logging.basicConfig(handlers=[logging.FileHandler(log_path, 'a', 'utf-8')], level=logging.INFO)
 
 
@@ -52,6 +54,20 @@ def parse_export_orders(testing:bool, cleaned_source_orders:list, loaded_txt:str
     logging.info(f'Loaded txt contains: {len(cleaned_source_orders)}. Further processing: {len(new_orders)} orders')
     ParseOrders(new_orders, db_client).export_orders(testing)
 
+def remove_todays_orders(orders:list) -> list :
+    '''returns a list of orders dicts, whose purchase date up to, but not including today's date (deletes todays orders), alerts VBA'''
+    try:
+        today_date = datetime.fromisoformat(TEST_TODAY_DATE) if TESTING else datetime.today().date().isoformat()
+        orders_until_today = list(filter(lambda order: get_datetime_obj(order['purchase-date']) < today_date, orders))
+        not_processing_count = len(orders) - len(orders_until_today)
+        alert_vba_date_count(today_date, not_processing_count)
+        logging.info(f'Orders passed today date filtering: {len(orders_until_today)}/{len(orders)}')
+        return orders_until_today
+    except Exception as e:
+        logging.critical(f'Unknown error: {e} while filtering out todays orders. Date used: {today_date}; is valid datetime obj: {isinstance(today_date, datetime)}')
+        print(VBA_ERROR_ALERT)
+        sys.exit()
+
 def parse_args():
     if len(sys.argv) == EXPECTED_SYS_ARGS:
         txt_path = sys.argv[1]
@@ -62,6 +78,7 @@ def parse_args():
         logging.critical(f'Error parsing arguments on script initialization in cmd. Arguments provided: {len(sys.argv)} Expected: {EXPECTED_SYS_ARGS}')
         sys.exit()
 
+
 def main(testing, amazon_export_txt_path):
     '''Main function executing parsing of provided txt file and outputing csv, xlsx files'''
     logging.info(f'\n NEW RUN STARTING: {datetime.today().strftime("%Y.%m.%d %H:%M")}')    
@@ -70,16 +87,24 @@ def main(testing, amazon_export_txt_path):
     else:
         print('RUNNING IN TESTING MODE')
         txt_path = amazon_export_txt_path
+
+        print('I need abs path mother fucker')
+        print(os.path.abspath(__file__))
+
     if os.path.exists(txt_path):
         logging.info('file exists, continuing to processing...')
+        print(f'File {os.path.basename(txt_path)} exists')
         cleaned_source_orders = get_cleaned_orders(txt_path)
-        parse_export_orders(testing, cleaned_source_orders, txt_path)
+        orders_for_parsing = remove_todays_orders(cleaned_source_orders)
+        print('PARSING SUSPENDED. ENDING HERE')
+        # parse_export_orders(testing, cleaned_source_orders, txt_path)
         print(VBA_OK)
     else:
         logging.critical(f'Provided file {txt_path} does not exist.')
         print(VBA_ERROR_ALERT)
         sys.exit()
     logging.info(f'\nRUN ENDED: {datetime.today().strftime("%Y.%m.%d %H:%M")}\n')
+
 
 
 if __name__ == "__main__":
