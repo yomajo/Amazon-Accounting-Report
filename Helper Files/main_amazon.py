@@ -58,7 +58,7 @@ def remove_todays_orders(orders:list) -> list :
     '''returns a list of orders dicts, whose purchase date up to, but not including today's date (deletes todays orders), alerts VBA'''
     try:
         today_date = datetime.fromisoformat(TEST_TODAY_DATE) if TESTING else datetime.today().date().isoformat()
-        orders_until_today = list(filter(lambda order: get_datetime_obj(order['purchase-date']) < today_date, orders))
+        orders_until_today = list(filter(lambda order: get_datetime_obj(order['payments-date']) < today_date, orders))
         not_processing_count = len(orders) - len(orders_until_today)
         alert_vba_date_count(today_date, not_processing_count)
         logging.info(f'Orders passed today date filtering: {len(orders_until_today)}/{len(orders)}')
@@ -96,8 +96,7 @@ def main(testing, amazon_export_txt_path):
         print(f'File {os.path.basename(txt_path)} exists')
         cleaned_source_orders = get_cleaned_orders(txt_path)
         orders_for_parsing = remove_todays_orders(cleaned_source_orders)
-        print('PARSING SUSPENDED. ENDING HERE')
-        # parse_export_orders(testing, cleaned_source_orders, txt_path)
+        parse_export_orders(testing, orders_for_parsing, txt_path)
         print(VBA_OK)
     else:
         logging.critical(f'Provided file {txt_path} does not exist.')
