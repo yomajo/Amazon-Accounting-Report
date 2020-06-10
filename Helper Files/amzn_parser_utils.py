@@ -1,4 +1,3 @@
-from amzn_parser_constants import ORIGIN_COUNTRY_CRITERIAS, CATEGORY_CRITERIAS
 from datetime import datetime
 import platform
 import logging
@@ -10,23 +9,10 @@ import openpyxl
 # GLOBAL VARIABLES
 VBA_ERROR_ALERT = 'ERROR_CALL_DADDY'
 
-def get_product_category(item_description : str):
-    '''returns item category based on products'''
-    for criteria_set in CATEGORY_CRITERIAS:
-        if criteria_set[0] in item_description.lower() and criteria_set[1] in item_description.lower():
-            return criteria_set[-1]
-    return 'OTHER'
-
-def get_origin_country(item_description : str):
-    '''returns item origin country based on products'''
-    for criteria_set in ORIGIN_COUNTRY_CRITERIAS:
-        if criteria_set[0] in item_description.lower() and criteria_set[1] in item_description.lower():
-            return criteria_set[-1]
-    return 'CN'
 
 def get_level_up_abspath(absdir_path):
-        from os import path
-        return path.dirname(absdir_path)
+    '''returns directory absolute path one level up from passed abs path'''
+    return os.path.dirname(absdir_path)
 
 def get_total_price(order_dict : dict):
     '''returns a sum of 'item-price' and 'shipping-price' for given order'''
@@ -90,6 +76,10 @@ def alert_vba_date_count(filter_date, orders_count):
     print(f'FILTER_DATE_USED: {filter_date}')
     print(f'SKIPPING_ORDERS_COUNT: {orders_count}')
 
+def dkey_to_float(order_dict : dict, key_title : str) -> float:
+    '''returns float value of order_dict[key_title]'''
+    return float(order_dict[key_title])
+
 def get_datetime_obj(date_str):
     '''returns tz-naive datetime obj from date string. Designed to work with str format: 2020-04-16T10:07:16+00:00'''
     try:
@@ -104,18 +94,6 @@ def get_datetime_obj(date_str):
             logging.critical(f'Unable to create datetime from date string: {date_str}. Terminating.')
             print(VBA_ERROR_ALERT)
             sys.exit()
-
-# def create_wb():
-#     '''creates a workbook from thin air'''
-#     wb = openpyxl.Workbook()
-#     ws = wb.active
-#     ws.title = 'Summary'
-#     ws1 = wb.create_sheet(title='1')
-#     ws2 = wb.create_sheet(title='2')
-#     ws3 = wb.create_sheet(title='buvo 3',index=0)
-#     ws3.cell(1,3).value = 'labas, as C1 celle'
-#     wb.save('summary.xlsx')
-
 
 
 if __name__ == "__main__":
