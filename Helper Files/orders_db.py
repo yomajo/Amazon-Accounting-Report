@@ -8,9 +8,9 @@ import os
 
 # GLOBAL VARIABLES
 ORDERS_ARCHIVE_DAYS = 14
-DATABASE_PATH = 'amzn_orders.db'
-BACKUP_DB_BEFORE_NAME = 'amzn_orders_b4lrun.db'
-BACKUP_DB_AFTER_NAME = 'amzn_orders_lrun.db'
+DATABASE_PATH = 'amzn_accounting.db'
+BACKUP_DB_BEFORE_NAME = 'amzn_accounting_b4lrun.db'
+BACKUP_DB_AFTER_NAME = 'amzn_accounting_lrun.db'
 VBA_ERROR_ALERT = 'ERROR_CALL_DADDY'
 
 
