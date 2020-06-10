@@ -1,5 +1,4 @@
 from amzn_parser_utils import get_output_dir, get_datetime_obj, alert_vba_date_count
-from etonas_xlsx_exporter import EtonasExporter
 from parse_orders import ParseOrders
 from orders_db import OrdersDB
 from datetime import datetime
@@ -8,6 +7,7 @@ import sys
 import csv
 import os
 
+# DELETE LATER
 from amzn_parser_utils import orders_column_to_file
 
 # GLOBAL VARIABLES
@@ -21,7 +21,7 @@ TEST_AMZN_EXPORT_TXT = r'/home/devyo/Coding/Git/Amazon Accounting Report/Amazon 
 
 # Logging config:
 log_path = os.path.join(get_output_dir(client_file=False), 'amazon_accounting.log')
-logging.basicConfig(handlers=[logging.FileHandler(log_path, 'a', 'utf-8')], level=logging.INFO)
+logging.basicConfig(handlers=[logging.FileHandler(log_path, 'a', 'utf-8')], level=logging.DEBUG)
 
 
 def get_cleaned_orders(source_file:str) -> list:
@@ -47,11 +47,11 @@ def clean_orders(orders:list) -> list:
             print(VBA_KEYERROR_ALERT)
     return orders
 
-def parse_export_orders(testing:bool, cleaned_source_orders:list, loaded_txt:str):
+def parse_export_orders(testing:bool, parse_orders:list, loaded_txt:str):
     '''interacts with classes (ParseOrders, OrdersDB) to filter new orders, export desired files and push new orders to db'''
-    db_client = OrdersDB(cleaned_source_orders, loaded_txt)
+    db_client = OrdersDB(parse_orders, loaded_txt)
     new_orders = db_client.get_new_orders_only()
-    logging.info(f'Loaded txt contains: {len(cleaned_source_orders)}. Further processing: {len(new_orders)} orders')
+    logging.info(f'After checking with database, further processing: {len(new_orders)} new orders')
     ParseOrders(new_orders, db_client).export_orders(testing)
 
 def remove_todays_orders(orders:list) -> list :
@@ -88,10 +88,6 @@ def main(testing, amazon_export_txt_path):
     else:
         print('RUNNING IN TESTING MODE')
         txt_path = amazon_export_txt_path
-
-        print('I need abs path mother fucker')
-        print(os.path.abspath(__file__))
-
     if os.path.exists(txt_path):
         logging.info('file exists, continuing to processing...')
         print(f'File {os.path.basename(txt_path)} exists')
