@@ -2,12 +2,12 @@ TEMPLATE_SHEET_MAPPING= {
         'Order ID' : 'order-id',
         'Order Item ID' : 'order-item-id',
         'Repicient' : 'recipient-name',
-        'Currency' : 'currency',
-        'Quantity' : 'quantity-purchased',
-        'Item Price' : 'item-price',
-        'Item Tax' : 'item-tax',
-        'Shipping Price' : 'shipping-price',
+        'Cur.' : 'currency',
+        'Q-ty' : 'quantity-purchased',
+        'Price' : 'item-price',
+        'Tax' : 'item-tax',
+        'Shipping' : 'shipping-price',
         'Shipping Tax' : 'shipping-tax',
-        'Purchase Date' : 'purchase-date',
-        'Payment Date': 'payments-date'
+        'Purchase' : 'purchase-date',
+        'Payment': 'payments-date'
 }
