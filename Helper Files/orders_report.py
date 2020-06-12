@@ -1,4 +1,4 @@
-from amzn_parser_utils import dkey_to_float, is_windows_machine, simplify_date
+from amzn_parser_utils import dkey_to_float, is_windows_machine, simplify_date, col_to_letter
 from amzn_parser_constants import TEMPLATE_SHEET_MAPPING
 import logging
 import openpyxl
@@ -27,8 +27,8 @@ class OrdersReport():
         '''generator yielding self.export_obj dict KEY1 (region) and nested KEY2 (currency) at a time'''
         for region in self.export_obj:
             for currency in self.export_obj[region]:
-                yield region, currency
-    
+                yield region, currency    
+
     def apply_orders_to_sheet_format(self, raw_orders_data : list):
         '''reduces input data to that needed in output data sheet'''
         ready_orders_data = []
@@ -51,26 +51,27 @@ class OrdersReport():
         return d_with_output_keys
 
     def _data_to_sheet(self, ws_name : str, orders_data: list):
-        '''creates new ws_name sheet and fills it with orders_data argument'''
+        '''creates new ws_name sheet and fills it with orders_data argument data'''
         self._create_sheet(ws_name)
         active_ws = self.wb[ws_name]
         active_ws.freeze_panes = active_ws['A2']
         self._fill_sheet(active_ws, orders_data)
-        # self._adjust_col_widths(active_ws)
+        self._adjust_col_widths(active_ws, self.col_widths)
 
     def _create_sheet(self, ws_name : str):
         '''creates new sheet obj with name ws_name'''
         self.wb.create_sheet(title=ws_name)
+        self.col_widths = {}
 
     def _fill_sheet(self, active_ws, orders_data:list):
-        '''writes headers, and corresponding orders data to active_ws'''
+        '''writes headers, and corresponding orders data to active_ws, resizes columns'''
         self._write_headers(active_ws, SHEET_HEADERS)
         self._write_sheet_orders(active_ws, SHEET_HEADERS, orders_data)
 
-    @staticmethod
-    def _write_headers(worksheet, headers):
-        for col, header in enumerate(headers, 1):
-            worksheet.cell(1, col).value = header    
+    def _write_headers(self, worksheet, headers):
+        for col, header in enumerate(headers):
+            self._update_col_widths(col, header)
+            worksheet.cell(1, col + 1).value = header    
 
     @staticmethod
     def range_generator(orders_data, headers):
@@ -82,22 +83,26 @@ class OrdersReport():
         for row, col in self.range_generator(orders_data, headers):
             working_dict = orders_data[row]
             key_pointer = headers[col]
+            self._update_col_widths(col, str(working_dict[key_pointer]))
             # offsets due to excel vs python numbering  + headers in row 1
             worksheet.cell(row + 2, col + 1).value = working_dict[key_pointer]
 
-    def _adjust_col_widths(self, worksheet):
-        for col in worksheet.columns:
-            max_length = 0
-            col_letter = col[0].column_letter
-            for cell in col:
-                try:
-                    if len(str(cell.value)) > max_length:
-                        max_length = len(cell.value)
-                except:
-                    pass
-            adjusted_width = (max_length + 2) * 1.1
-            worksheet.column_dimensions[col_letter].width = adjusted_width
+    def _update_col_widths(self, col : int, cell_value : str):
+        '''runs on each cell. Forms a dictionary {'A':30, 'B':15...} for max column widths in worksheet (width as length of max cell)'''
+        col_letter = col_to_letter(col)
+        if col_letter in self.col_widths:
+            # check for length, update if current cell length exceeds current entry for column
+            if len(cell_value) > self.col_widths[col_letter]:
+                self.col_widths[col_letter] = len(cell_value)
+        else:
+            self.col_widths[col_letter] = len(cell_value)
 
+    def _adjust_col_widths(self, worksheet, col_widths : dict):
+        '''iterates over {'A':30, 'B':40, 'C':35...} dict to resize worksheets' column widths'''
+        for col_letter in col_widths:
+            adjusted_width = ((col_widths[col_letter]) + 2 * 1.05 )
+            worksheet.column_dimensions[col_letter].width = adjusted_width
+    
     def fill_summary(self):
         pass
 
