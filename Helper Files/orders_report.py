@@ -9,6 +9,7 @@ import subprocess
 
 # GLOBAL VARIABLES
 VBA_ERROR_ALERT = 'ERROR_CALL_DADDY'
+SUMMARY_SHEET_NAME = 'Summary'
 SHEET_HEADERS = list(TEMPLATE_SHEET_MAPPING.keys())
 
 
@@ -22,6 +23,8 @@ class OrdersReport():
     
     def __init__(self, export_obj : dict):
         self.export_obj = export_obj
+        # {'EU EUR': {'Total': 2066, 'Count':69, 'Average': 30.61}}
+        self.totals = {}
     
     def unpack_export_obj(self):
         '''generator yielding self.export_obj dict KEY1 (region) and nested KEY2 (currency) at a time'''
@@ -104,19 +107,58 @@ class OrdersReport():
             worksheet.column_dimensions[col_letter].width = adjusted_width
     
     def fill_summary(self):
-        pass
+        '''Forms a summary statistics sheet / report'''
+        active_ws = self.wb[SUMMARY_SHEET_NAME]
+        self.write_totals_table(active_ws)
+        self.write_daily_breakdown_table(active_ws)        
+        
+    def write_totals_table(self, ws):
+        '''fills out first table in main sheet of report.
+        Table height is fixed, but width is flexible depending on data segments'''
+        # Write vertical headers (Total, Orders, Average in A3:A5)
+        any_values_dict = list(self.totals.values())[0]
+        for row, values_header in enumerate(any_values_dict.keys()):
+            ws.cell(row + 3, 1).value = values_header
+        # Fill segment name and values (range B2:[n]5):
+        for col, (segment, values) in enumerate(self.totals.items()):
+            ws.cell(2, col + 2).value = segment
+            ws.cell(3, col + 2).value = values['Total']
+            ws.cell(4, col + 2).value = values['Orders']
+            ws.cell(5, col + 2).value = values['Average']
+    
+    def write_daily_breakdown_table(self, ws):
+        '''fills out second table, which breaks down daily statistics for each segment'''
+        ws.cell(10, 3).value = 'Somewhere here will come the more powerful table.'
+        # pass
+
+    def get_segment_total_count_avg(self, segment_name : str, segment_orders : list) -> dict:
+        '''adds to self.totals a new key (segment name), calculated total, count and average'''
+        s_total = self.get_total(segment_orders)
+        s_count = len(segment_orders)
+        s_avg = round(s_total / s_count, 2)
+        return {'Total' : s_total, 'Orders' : s_count, 'Average' : s_avg}
+
+    @staticmethod
+    def get_total(orders : list) -> float:
+        '''Returns a sum of all orders' item-price + item-tax in list of order dicts'''
+        total = 0
+        for order in orders:
+            total += dkey_to_float(order, 'item-price') + dkey_to_float(order, 'item-tax')
+        return total
 
     def export(self, wb_name : str):
         '''unpacks data object and pushes orders data to appropriate sheets, forms a summary sheet, saves new workbook'''
         try:
             self.wb = openpyxl.Workbook()
             ws = self.wb.active
-            ws.title = 'Summary'
+            ws.title = SUMMARY_SHEET_NAME
             # Unpacking data to sheets:
             for region, currency in self.unpack_export_obj():
-                working_orders = self.export_obj[region][currency]
-                sheet_ready_data = self.apply_orders_to_sheet_format(working_orders)
+                segment_orders = self.export_obj[region][currency]
+                self.totals[f'{region} {currency}'] = self.get_segment_total_count_avg(f'{region} {currency}', segment_orders)
+                sheet_ready_data = self.apply_orders_to_sheet_format(segment_orders)
                 self._data_to_sheet(f'{region} {currency}', sheet_ready_data)
+            self.fill_summary()
         except Exception as e:
             print(f'Unknown error while creating excel report {os.path.basename(wb_name)}. Err: {e}')
         finally:
