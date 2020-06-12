@@ -95,8 +95,8 @@ def get_datetime_obj(date_str):
             print(VBA_ERROR_ALERT)
             sys.exit()
 
-def simplify_date(date_str):
-    '''simplify raw datetime format 2020-04-16T06:53:44+00:00 to YYYY-MM-DD'''
+def simplify_date(date_str : str) -> str:
+    '''returns a simplified date format: YYYY-MM-DD from rawformat 2020-04-16T06:53:44+00:00'''
     try:
         return get_datetime_obj(date_str).date()
     except ValueError:
