@@ -1,5 +1,6 @@
-from amzn_parser_utils import dkey_to_float, is_windows_machine, simplify_date, col_to_letter
+from amzn_parser_utils import is_windows_machine, simplify_date, col_to_letter
 from amzn_parser_constants import TEMPLATE_SHEET_MAPPING
+from collections import defaultdict
 import logging
 import openpyxl
 import os
@@ -17,64 +18,122 @@ class OrdersReport():
     '''accepts export data dictionary and output file path as arguments, creates individual
     sheets for region & currency based order segregation, creates formatted xlsx report file.
     Error handling is present outside of this class.
+
+    Expected input obj format: 
+        {eu_orders: {currency1: [order1, order2, order...], currency2: [order1, order2, order...], ...},
+        non_eu_orders: {currency1: [order1, order2, order...], currency2: [order1, order2, order...] ...},
+        ...}
     
     Main method: export() - creates individual sheets, pushes selected data from corresponding orders;
     creates summary sheet, calculates regional / currency based totals'''
     
     def __init__(self, export_obj : dict):
         self.export_obj = export_obj
-        # {'EU EUR': {'Total': 2066, 'Count':69, 'Average': 30.61}}
-        self.totals = {}
+        self.__get_report_objs()
     
-    def unpack_export_obj(self):
+    def __get_report_objs(self):
+        '''prepares cls variables from passed raw data - export_obj:
+         1. self.segments_orders_obj, 2. self.daily_breakdown_obj, 3. self.totals'''
+        self.segments_orders_obj = self._get_segments_orders_obj(self.export_obj)
+        self.daily_breakdown_obj = self._get_segments_daily_breakdown_obj(self.segments_orders_obj)
+        self.totals = self._get_totals_counts_avgs(self.segments_orders_obj)
+    
+    def _get_segments_orders_obj(self, export_obj : dict) -> dict:
+        '''returns dict of dicts for each segment (sheets) and corresponding list of orders
+        returned object: {'EU EUR' : [order1, order2, ...], 'NON-EU GBP' : [order11, order 22...], ...}'''
+        segments_orders = {}
+        for region, currency in self._unpack_export_obj(export_obj):
+            segments_orders[f'{region} {currency}'] = self._correct_orders_numbers_dates(export_obj[region][currency])
+        return segments_orders
+
+    @staticmethod
+    def _unpack_export_obj(export_obj : dict):
         '''generator yielding self.export_obj dict KEY1 (region) and nested KEY2 (currency) at a time'''
-        for region in self.export_obj:
-            for currency in self.export_obj[region]:
+        for region in export_obj:
+            for currency in export_obj[region]:
                 yield region, currency    
+    
+    @staticmethod
+    def _correct_orders_numbers_dates(orders : list) -> list:
+        '''date and numbers data cleaning for report:
+        - original date format (2020-04-16T10:07:16+00:00) simplified to YYYY-MM-DD
+        - all numbers of interest converted to floats'''
+        for order in orders:
+            # Simplifying order dates:
+            order['purchase-date'] = simplify_date(order['purchase-date'])
+            order['payments-date'] = simplify_date(order['payments-date'])
+            # Converting numbers stored as strings to floats:
+            order['item-price'] = float(order['item-price'])
+            order['item-tax'] = float(order['item-tax'])
+            order['shipping-price'] = float(order['shipping-price'])
+            order['shipping-tax'] = float(order['shipping-tax'])
+        return orders
 
-    def apply_orders_to_sheet_format(self, raw_orders_data : list):
-        '''reduces input data to that needed in output data sheet'''
-        ready_orders_data = []
-        for order_dict in raw_orders_data:
-            reduced_order_dict = self.get_mapped_dict(order_dict)
-            ready_orders_data.append(reduced_order_dict)
-        return ready_orders_data
+    def _get_totals_counts_avgs(self, segments_obj : dict) -> dict:
+        '''Calulates and returns totals obj for each segment. Return format:
+        {'EU EUR': {'Total':2066, 'Count':69, 'Average':29.94}, 'NON-EU GBP': {'Total':1534.72, 'Count':122, 'Average':12.58}, ...}'''
+        segments_totals = {}
+        for segment, segment_orders in segments_obj.items():
+            s_total = self._get_segment_total(segment_orders)
+            s_count = len(segment_orders)
+            s_avg = round(s_total / s_count, 2)
+            segments_totals[segment] = {'Total' : s_total, 'Orders' : s_count, 'Average' : s_avg}
+        return segments_totals
 
-    def get_mapped_dict(self, order_dict : dict):
-        d_with_output_keys = {}
-        for header, d_key in TEMPLATE_SHEET_MAPPING.items():
-            if d_key in ['item-price', 'item-tax', 'shipping-price', 'shipping-tax']:
-                d_value_as_float = dkey_to_float(order_dict, d_key)
-                d_with_output_keys[header] = d_value_as_float
-            elif d_key in ['purchase-date', 'payments-date']:
-                simpler_date = simplify_date(order_dict[d_key])
-                d_with_output_keys[header] = simpler_date
-            else:
-                d_with_output_keys[header] = order_dict[TEMPLATE_SHEET_MAPPING[header]]
-        return d_with_output_keys
+    @staticmethod
+    def _get_segment_total(orders : list) -> float:
+        '''Returns a sum of all orders' item-price + item-tax in list of order dicts'''
+        total = 0
+        for order in orders:
+            total += order['item-price'] + order['item-tax']
+        return round(total, 2)
+
+    def _get_segments_daily_breakdown_obj(self, segments_obj : dict) -> dict:
+        '''returns object dissected by payment date stats for each segment. Example:
+        {'EU EUR': {'date1': {'Total': X, 'Orders': Y, 'Average': Z}, 'date2': {'Total': X, 'Orders': Y, 'Average': Z}, ...},
+        'NON-EU GBP': {'date1': {'Total': X, 'Orders': Y, 'Average': Z}, 'date2': {'Total': X, 'Orders': Y, 'Average': Z}, ...}, ...}'''
+        daily_breakdown_obj = {}
+        for segment, segment_orders in segments_obj.items():
+            segment_dates_obj = self._get_payment_date_obj(segment_orders)
+            # Note: stats by date keys, contrary to docstring, here returns obj, whose keys are payments dates
+            stats_by_date = self._get_totals_counts_avgs(segment_dates_obj)
+            daily_breakdown_obj[segment] = stats_by_date        
+        return daily_breakdown_obj
+
+    @staticmethod
+    def _get_payment_date_obj(segment_orders : list) -> dict:
+        '''forms a dictionary based on segment's payment dates as keys and orders list as values.
+        Output format: {
+            {'YYYY-MM-D1':[order1, order2, ...]},
+            {'YYYY-MM-D2':[order1, order2, ...]},
+            ...}'''
+        payment_date_orders = defaultdict(list)
+        for order in segment_orders:
+            payment_date_orders[order['payments-date']].append(order)
+        return payment_date_orders
 
     def _data_to_sheet(self, ws_name : str, orders_data: list):
         '''creates new ws_name sheet and fills it with orders_data argument data'''
-        self._create_sheet(ws_name)
+        self.__create_sheet(ws_name)
         active_ws = self.wb[ws_name]
         active_ws.freeze_panes = active_ws['A2']
         self._fill_sheet(active_ws, orders_data)
         self._adjust_col_widths(active_ws, self.col_widths)
 
-    def _create_sheet(self, ws_name : str):
+    def __create_sheet(self, ws_name : str):
         '''creates new sheet obj with name ws_name'''
         self.wb.create_sheet(title=ws_name)
         self.col_widths = {}
 
     def _fill_sheet(self, active_ws, orders_data:list):
         '''writes headers, and corresponding orders data to active_ws, resizes columns'''
-        self._write_headers(active_ws, SHEET_HEADERS)
-        self._write_sheet_orders(active_ws, SHEET_HEADERS, orders_data)
+        self._write_headers(active_ws)
+        self._write_sheet_orders(active_ws, orders_data)
 
-    def _write_headers(self, worksheet, headers):
-        for col, header in enumerate(headers):
+    def _write_headers(self, worksheet):
+        for col, header in enumerate(SHEET_HEADERS):
             self._update_col_widths(col, header)
-            worksheet.cell(1, col + 1).value = header    
+            worksheet.cell(1, col + 1).value = header
 
     @staticmethod
     def range_generator(orders_data, headers):
@@ -82,10 +141,10 @@ class OrdersReport():
             for col, _ in enumerate(headers):
                 yield row, col
     
-    def _write_sheet_orders(self, worksheet, headers, orders_data):
-        for row, col in self.range_generator(orders_data, headers):
+    def _write_sheet_orders(self, worksheet, orders_data : list):
+        for row, col in self.range_generator(orders_data, SHEET_HEADERS):
             working_dict = orders_data[row]
-            key_pointer = headers[col]
+            key_pointer = TEMPLATE_SHEET_MAPPING[SHEET_HEADERS[col]]
             self._update_col_widths(col, str(working_dict[key_pointer]))
             # offsets due to excel vs python numbering  + headers in row 1
             worksheet.cell(row + 2, col + 1).value = working_dict[key_pointer]
@@ -131,33 +190,15 @@ class OrdersReport():
         ws.cell(10, 3).value = 'Somewhere here will come the more powerful table.'
         # pass
 
-    def get_segment_total_count_avg(self, segment_name : str, segment_orders : list) -> dict:
-        '''adds to self.totals a new key (segment name), calculated total, count and average'''
-        s_total = self.get_total(segment_orders)
-        s_count = len(segment_orders)
-        s_avg = round(s_total / s_count, 2)
-        return {'Total' : s_total, 'Orders' : s_count, 'Average' : s_avg}
-
-    @staticmethod
-    def get_total(orders : list) -> float:
-        '''Returns a sum of all orders' item-price + item-tax in list of order dicts'''
-        total = 0
-        for order in orders:
-            total += dkey_to_float(order, 'item-price') + dkey_to_float(order, 'item-tax')
-        return total
-
     def export(self, wb_name : str):
-        '''unpacks data object and pushes orders data to appropriate sheets, forms a summary sheet, saves new workbook'''
+        '''Creates workbook, and exports class objects: segments_orders_obj, daily_breakdown_obj, totals to
+        segment worksheets and creates report summary sheet, saves new workbook'''
         try:
             self.wb = openpyxl.Workbook()
             ws = self.wb.active
             ws.title = SUMMARY_SHEET_NAME
-            # Unpacking data to sheets:
-            for region, currency in self.unpack_export_obj():
-                segment_orders = self.export_obj[region][currency]
-                self.totals[f'{region} {currency}'] = self.get_segment_total_count_avg(f'{region} {currency}', segment_orders)
-                sheet_ready_data = self.apply_orders_to_sheet_format(segment_orders)
-                self._data_to_sheet(f'{region} {currency}', sheet_ready_data)
+            for segment, segment_orders in self.segments_orders_obj.items():
+                self._data_to_sheet(segment, segment_orders)
             self.fill_summary()
         except Exception as e:
             print(f'Unknown error while creating excel report {os.path.basename(wb_name)}. Err: {e}')
