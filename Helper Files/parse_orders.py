@@ -1,4 +1,4 @@
-from amzn_parser_utils import dkey_to_float, get_output_dir
+from amzn_parser_utils import get_output_dir
 from orders_report import OrdersReport
 from collections import defaultdict
 from datetime import datetime
@@ -39,7 +39,7 @@ class ParseOrders():
         '''splits all_orders into two lists: EU (VAT (item-tax) > 0) and NON-EU (VAT = 0); Exits if resulting lists are empty'''    
         for order in self.all_orders:
             try:
-                if dkey_to_float(order, 'item-tax') > 0:
+                if float(order['item-tax']) > 0:
                     self.eu_orders.append(order)
                 else:
                     self.non_eu_orders.append(order)
@@ -81,7 +81,8 @@ class ParseOrders():
         self.export_obj = {'EU' : eu_currency_grouped, 'NON-EU' : non_eu_currency_grouped}
         return self.export_obj
 
-    def get_region_currency_based_dict(self, region_orders : list) -> dict:
+    @staticmethod
+    def get_region_currency_based_dict(region_orders : list) -> dict:
         currency_based_dict = defaultdict(list)
         for order in region_orders:
             currency_based_dict[order['currency']].append(order)
