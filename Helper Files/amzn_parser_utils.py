@@ -15,20 +15,6 @@ def get_level_up_abspath(absdir_path):
     '''returns directory absolute path one level up from passed abs path'''
     return os.path.dirname(absdir_path)
 
-def get_total_price(order_dict : dict):
-    '''returns a sum of 'item-price' and 'shipping-price' for given order'''
-    try:
-        item_price = order_dict['item-price']
-        shipping_price = order_dict['shipping-price']
-        return str(float(item_price) + float(shipping_price))
-    except KeyError as e:
-        logging.critical(f'Could not find item-price or shipping-price keys in provided dict: {order_dict} Error: {e}')
-        print(VBA_ERROR_ALERT)
-        sys.exit()
-    except ValueError as e:
-        logging.critical(f"Could not convert item-price or shipping-price to float. Both values: {order_dict['item-price']}; {order_dict['shipping-price']} Error: {e}")
-        print(VBA_ERROR_ALERT)
-        sys.exit()
 
 def get_output_dir(client_file=True):
     '''returns target dir for output files depending on execution type (.exe/.py) and file type (client/systemic)'''
@@ -77,10 +63,6 @@ def alert_vba_date_count(filter_date, orders_count):
     print(f'FILTER_DATE_USED: {filter_date}')
     print(f'SKIPPING_ORDERS_COUNT: {orders_count}')
 
-def dkey_to_float(order_dict : dict, key_title : str) -> float:
-    '''returns float value of order_dict[key_title]'''
-    return float(order_dict[key_title])
-
 def get_datetime_obj(date_str):
     '''returns tz-naive datetime obj from date string. Designed to work with str format: 2020-04-16T10:07:16+00:00'''
     try:
@@ -99,7 +81,8 @@ def get_datetime_obj(date_str):
 def simplify_date(date_str : str) -> str:
     '''returns a simplified date format: YYYY-MM-DD from rawformat 2020-04-16T06:53:44+00:00'''
     try:
-        return get_datetime_obj(date_str).date()
+        date = get_datetime_obj(date_str).date()
+        return date.strftime('%Y-%m-%d')
     except ValueError:
         logging.warning(f'Unable to return simplified version of date: {date_str}. Returning raw format instead')
         return date_str
