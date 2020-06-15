@@ -7,8 +7,6 @@ import sys
 import csv
 import os
 
-# DELETE LATER
-from amzn_parser_utils import orders_column_to_file
 
 # GLOBAL VARIABLES
 TESTING = True
