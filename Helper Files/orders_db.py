@@ -7,7 +7,7 @@ import os
 
 
 # GLOBAL VARIABLES
-ORDERS_ARCHIVE_DAYS = 14
+ORDERS_ARCHIVE_DAYS = 30
 DATABASE_PATH = 'amzn_accounting.db'
 BACKUP_DB_BEFORE_NAME = 'amzn_accounting_b4lrun.db'
 BACKUP_DB_AFTER_NAME = 'amzn_accounting_lrun.db'
@@ -59,6 +59,7 @@ class OrdersDB:
                                                 payments_date TEXT,
                                                 buyer_name TEXT NOT NULL,
                                                 quantity INTEGER,
+                                                currency TEXT,
                                                 item_price DECIMAL,
                                                 item_tax DECIMAL,
                                                 shipping_price DECIMAL,
@@ -121,27 +122,30 @@ class OrdersDB:
     def insert_multiple_orders(self, orders, run_id):
         '''adds all orders list members to 'orders' table in database. Assumes none of passed orders are in database'''
         date_added = datetime.today().strftime('%Y-%m-%d')
-        for order_dict in orders:
-            order_id = order_dict['order-id']
-            purchase_date = order_dict['purchase-date']
-            payments_date = order_dict['payments-date']
-            buyer = order_dict['buyer-name']
-            self.insert_new_order(order_id, purchase_date, payments_date, buyer, date_added, run_id)
+        for order in orders:
+            self.insert_new_order(order, date_added, run_id)
         logging.info(f'{len(orders)} new orders were successfully added to database at run: {run_id}')
 
-    def insert_new_order(self, order_id, purchase_date, payments_date, buyer_name, date_added, run_id):
-        '''executes INSERT INTO orders with provided order args. Single order insert'''
+    def insert_new_order(self, order : dict, date_added : str, run_id : str):
+    # def insert_new_order(self, order_id, purchase_date, payments_date, buyer_name, date_added, run_id):
+        '''executes INSERT INTO 'orders' table with provided run_id, data for insert from order (dict). Single order insert'''
+        order_id = order['order-id']
+        buyer_name = order['buyer-name']
         try:
             with self.con:
-                self.con.execute('''INSERT INTO orders (order_id, purchase_date, payments_date, buyer_name, date_added, run)
-                                                VALUES (:order_id, :purchase_date, :payments_date, :buyer_name, :date_added, :run)''',
-                                                {'order_id':order_id, 'purchase_date':purchase_date, 'payments_date':payments_date,
-                                                'buyer_name':buyer_name, 'date_added':date_added, 'run':run_id})
+                self.con.execute('''INSERT INTO orders (order_id, order_item_id, purchase_date, payments_date, buyer_name,
+                                quantity, currency, item_price, item_tax, shipping_price, shipping_tax, date_added, run)
+                                
+                                VALUES (:order_id, :order_item_id, :purchase_date, :payments_date, :buyer_name, :quantity,
+                                :currency, :item_price, :item_tax, :shipping_price, :shipping_tax,:date_added, :run)''',
+
+                                {'order_id':order_id, 'order_item_id':order['order-item-id'], 'purchase_date':order['purchase-date'],
+                                'payments_date':order['payments-date'], 'buyer_name':order['buyer-name'], 'quantity':order['quantity-purchased'],
+                                'currency':order['currency'], 'item_price':order['item-price'], 'item_tax':order['item-tax'],
+                                'shipping_price':order['shipping-price'], 'shipping_tax':order['shipping-tax'], 'date_added':date_added, 'run':run_id})
             logging.debug(f'Order {order_id} added to db successfully; run: {run_id} buyer: {buyer_name}')
         except sqlite3.OperationalError as e:
             logging.error(f'Order {order_id} insertion failed. Syntax error: {e}')
-        except sqlite3.IntegrityError as e:
-            logging.warning(f'Multi-item / multi-line order {order_id}. Already in database.')
         except Exception as e:
             logging.error(f'Unknown error while inserting order {order_id} data to orders table. Error: {e}')
 
