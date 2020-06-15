@@ -108,12 +108,7 @@ class ParseOrders():
         '''Summing up tasks inside ParseOrders class'''
         self._prepare_filepaths()
         self.split_orders_by_tax_region()
-        self.prepare_export_obj()
-        
-        print('SUSPENDING FOR NOW, closing db connection, exiting via sys.exit')
-        self.db_client.close_connection()
-        sys.exit()
-
+        self.prepare_export_obj()        
         if testing:
             logging.info(f'Suspended export of orders due to flag testing value: {testing}. Still adding orders to db though')
             self.push_orders_to_db()
