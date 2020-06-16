@@ -110,9 +110,11 @@ class ParseOrders():
         self.split_orders_by_tax_region()
         self.prepare_export_obj()        
         if testing:
-            logging.info(f'Suspended export of orders due to flag testing value: {testing}. Still adding orders to db though')
-            self.push_orders_to_db()
-            print(f'Finished. Report export suspended, orders added to DB due to flag testing value: {testing}')
+            logging.info(f'Due to flag testing value: {testing}. Order export and adding to database suspended. Change behaviour in export_orders method in ParseOrders class')
+            print(f'Due to flag testing value: {testing}. Order export and adding to database suspended. Change behaviour in export_orders method in ParseOrders class')
+            self.db_client.close_connection()
+            # self.export_report()
+            # self.push_orders_to_db()
             return
         self.export_report()
         self.push_orders_to_db()
