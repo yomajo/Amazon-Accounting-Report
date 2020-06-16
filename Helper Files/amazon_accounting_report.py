@@ -58,7 +58,7 @@ def parse_export_orders(testing:bool, parse_orders:list, loaded_txt:str):
 def remove_todays_orders(orders:list) -> list :
     '''returns a list of orders dicts, whose purchase date up to, but not including today's date (deletes todays orders), alerts VBA'''
     try:
-        today_date = datetime.fromisoformat(TEST_TODAY_DATE) if TESTING else datetime.today().date().isoformat()
+        today_date = get_today_obj(TESTING)
         orders_until_today = list(filter(lambda order: get_datetime_obj(order['payments-date']) < today_date, orders))
         not_processing_count = len(orders) - len(orders_until_today)
         alert_vba_date_count(today_date, not_processing_count)
@@ -68,6 +68,14 @@ def remove_todays_orders(orders:list) -> list :
         logging.critical(f'Unknown error: {e} while filtering out todays orders. Date used: {today_date}; is valid datetime obj: {isinstance(today_date, datetime)}')
         print(VBA_ERROR_ALERT)
         sys.exit()
+
+def get_today_obj(testing):
+    '''returns instance of datetime library corresponding to date (no time) for today used in rest of program'''
+    if testing:
+        return datetime.fromisoformat(TEST_TODAY_DATE) 
+    else:
+        today_str = datetime.today().date().isoformat()
+        return datetime.fromisoformat(today_str)
 
 def parse_args():
     '''accepts txt_path from as command line argument'''
