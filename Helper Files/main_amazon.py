@@ -1,4 +1,4 @@
-from amzn_parser_utils import get_output_dir, get_datetime_obj, alert_vba_date_count
+from amzn_parser_utils import get_output_dir, get_datetime_obj, alert_vba_date_count, is_windows_machine
 from parse_orders import ParseOrders
 from orders_db import OrdersDB
 from datetime import datetime
@@ -9,13 +9,16 @@ import os
 
 
 # GLOBAL VARIABLES
-TESTING = True
+TESTING = False
 TEST_TODAY_DATE = '2020-04-17'
 EXPECTED_SYS_ARGS = 2
 VBA_ERROR_ALERT = 'ERROR_CALL_DADDY'
 VBA_KEYERROR_ALERT = 'ERROR_IN_SOURCE_HEADERS'
 VBA_OK = 'EXPORTED_SUCCESSFULLY'
-TEST_AMZN_EXPORT_TXT = r'/home/devyo/Coding/Git/Amazon Accounting Report/Amazon exports/run1.txt'
+if is_windows_machine():
+    TEST_AMZN_EXPORT_TXT = r'C:\Coding\Ebay\Working\Backups\Amazon exports\amzn2.txt'
+else:
+    TEST_AMZN_EXPORT_TXT = r'/home/devyo/Coding/Git/Amazon Accounting Report/Amazon exports/run1.txt'
 
 # Logging config:
 log_path = os.path.join(get_output_dir(client_file=False), 'amazon_accounting.log')
@@ -98,7 +101,6 @@ def main(testing, amazon_export_txt_path):
         print(VBA_ERROR_ALERT)
         sys.exit()
     logging.info(f'\nRUN ENDED: {datetime.today().strftime("%Y.%m.%d %H:%M")}\n')
-
 
 
 if __name__ == "__main__":
