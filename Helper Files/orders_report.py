@@ -1,4 +1,4 @@
-from amzn_parser_utils import is_windows_machine, simplify_date, col_to_letter
+from amzn_parser_utils import simplify_date, col_to_letter
 from amzn_parser_constants import TEMPLATE_SHEET_MAPPING
 from collections import defaultdict
 import itertools
@@ -6,7 +6,6 @@ import openpyxl
 import os
 
 # GLOBAL VARIABLES
-VBA_ERROR_ALERT = 'ERROR_CALL_DADDY'
 SUMMARY_SHEET_NAME = 'Summary'
 D_BREAKDOWN_HEADERS = ['Segment', 'Date', 'Total', 'Orders', 'Average']
 BOLD_STYLE = openpyxl.styles.Font(bold=True, name='Calibri')
@@ -198,7 +197,6 @@ class OrdersReport():
             ws.cell(5, col + 2).value = stats['Average']
             ws.cell(5, col + 2).number_format = '#,##0.00'
 
-
     def write_daily_breakdown_table(self, ws):
         '''fills out second table, which breaks down daily statistics for each segment'''
         self.row_cursor = 8
@@ -261,6 +259,7 @@ class OrdersReport():
         for row in [7, 8]:
             for col in range(1, 6):
                 yield row, col
+
 
     def export(self, wb_name : str):
         '''Creates workbook, and exports class objects: segments_orders_obj, daily_breakdown_obj, totals to
