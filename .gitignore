@@ -5,3 +5,6 @@ Amazon exports
 .vscode
 __pycache__
 export_data.json
+build
+dist
+amazon_accounting_report.spec
