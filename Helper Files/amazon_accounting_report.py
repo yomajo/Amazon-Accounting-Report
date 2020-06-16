@@ -22,7 +22,7 @@ else:
 
 # Logging config:
 log_path = os.path.join(get_output_dir(client_file=False), 'amazon_accounting.log')
-logging.basicConfig(handlers=[logging.FileHandler(log_path, 'a', 'utf-8')], level=logging.DEBUG)
+logging.basicConfig(handlers=[logging.FileHandler(log_path, 'a', 'utf-8')], level=logging.INFO)
 
 
 def get_cleaned_orders(source_file:str) -> list:
@@ -59,9 +59,11 @@ def remove_todays_orders(orders:list) -> list :
     '''returns a list of orders dicts, whose purchase date up to, but not including today's date (deletes todays orders), alerts VBA'''
     try:
         today_date = get_today_obj(TESTING)
+        today_str = today_date.strftime('%Y-%m-%d')
+        logging.info(f'Filter date used in program: {today_date}. Passing to vba and logging strftime format: {today_str}')
         orders_until_today = list(filter(lambda order: get_datetime_obj(order['payments-date']) < today_date, orders))
         not_processing_count = len(orders) - len(orders_until_today)
-        alert_vba_date_count(today_date, not_processing_count)
+        alert_vba_date_count(today_str, not_processing_count)
         logging.info(f'Orders passed today date filtering: {len(orders_until_today)}/{len(orders)}')
         return orders_until_today
     except Exception as e:
