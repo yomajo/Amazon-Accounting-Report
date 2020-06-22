@@ -4,7 +4,7 @@
 
 The firm calculates sales from Amazon market place based on VAT (value added tax) region and currency segments.
 
-Report takes an export text file from Amazon and prepares a flexible Accounting Report.
+Program takes an export text file from Amazon and prepares a flexible Accounting Report in `xlsx` format.
 
 Project is heavily based on [previous work](https://github.com/yomajo/Amazon-Orders-Parser).
 
@@ -20,7 +20,7 @@ Project is heavily based on [previous work](https://github.com/yomajo/Amazon-Ord
     * orders alreadt processed before (present in database)
 * Logs, backups database;
 * Automatic database self-flushing of records as defined by `ORDERS_ARCHIVE_DAYS` in [orders_db.py](https://github.com/yomajo/Amazon-Accounting-Report/blob/master/Helper%20Files/orders_db.py);
-* Creates a report with:
+* Creates a Excel report with:
     * Datasheets for each present segments in loaded raw text file with selected data for each order;
     * Summary sheet
 
