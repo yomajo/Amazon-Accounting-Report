@@ -113,7 +113,8 @@ class ParseOrders():
             logging.info(f'Due to flag testing value: {testing}. Order export and adding to database suspended. Change behaviour in export_orders method in ParseOrders class')
             print(f'Due to flag testing value: {testing}. Order export and adding to database suspended. Change behaviour in export_orders method in ParseOrders class')
             self.db_client.close_connection()
-            # self.export_report()
+            print('ENABLED REPORT EXPORT WHILE TESTING')
+            self.export_report()
             # self.push_orders_to_db()
             return
         self.export_report()
