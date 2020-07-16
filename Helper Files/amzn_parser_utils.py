@@ -2,10 +2,9 @@ from openpyxl.utils import get_column_letter
 from datetime import datetime
 import platform
 import logging
+import json
 import sys
 import os
-
-import openpyxl
 
 # GLOBAL VARIABLES
 VBA_ERROR_ALERT = 'ERROR_CALL_DADDY'
@@ -93,6 +92,10 @@ def col_to_letter(col : int, zero_indexed=True) -> str:
         col += 1
     return get_column_letter(col)
 
+def export_json_data(dataobj : dict, json_path : str ='export.json'):
+    '''exports dataobj in json format'''
+    with open(json_path, 'w') as f:
+        json.dump(dataobj, f, indent=4)
 
 if __name__ == "__main__":
     pass
