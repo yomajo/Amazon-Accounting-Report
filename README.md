@@ -28,7 +28,7 @@ Project is heavily based on [previous work](https://github.com/yomajo/Amazon-Ord
 
 Example of report summary sheet:
 
-![Report Summary Sceenshot](https://user-images.githubusercontent.com/45366313/85259054-0962de80-b471-11ea-85f1-30500719b90a.JPG)
+![Report Summary Sceenshot](https://user-images.githubusercontent.com/45366313/87704500-286d3b80-c7a5-11ea-9877-2e83342dba0c.png)
 
 Example of report data sheet for specific segment:
 
