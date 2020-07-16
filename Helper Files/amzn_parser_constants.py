@@ -11,3 +11,5 @@ TEMPLATE_SHEET_MAPPING= {
         'Purchase' : 'purchase-date',
         'Payment': 'payments-date'
 }
+
+SUMMARY_HEADERS = ['Currency', '  Date ', '  Total', 'Total #', 'VAT   ', '  #', 'NON-VAT', '  #']
