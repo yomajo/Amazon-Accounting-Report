@@ -76,7 +76,8 @@ class OrdersReport():
     def _get_summary_table_obj(self, export_obj : dict) -> dict:
         '''Returns nestd object based on 1. currency 2. order dates. Example:
         {'EUR':{'date1':[order1, order2...], 'date2':[order3, order4...], ...},
-        'GBP':{'date1':[order1, order2...], 'date2':[order1, order2...], ...}, ...}'''
+        'GBP':{'date1':[order1, order2...], 'date2':[order1, order2...], ...}, ...}
+        Note: output is region agnostic. Regions get mixed up'''
         summary_table_obj = defaultdict(dict)
         currency_based = defaultdict(list)
         # 1st loop forms currency (key) based obj. Output: {'currency1':[order1, order2, ...], 'currency2':[order2, order3...],...}
@@ -174,9 +175,10 @@ class OrdersReport():
         self._adjust_col_widths(self.s_ws, self.col_widths, summary=True)
 
     def __add_summary_headers(self):
-        '''writes fixed headers in summary sheet'''
+        '''writes fixed headers in summary sheet, freeze pane'''
         self.s_ws.cell(self.row_cursor, REPORT_START_COL + 3).value = 'Daily Breakdown'
         self.s_ws.cell(self.row_cursor, REPORT_START_COL + 3).font = BOLD_STYLE
+        self.s_ws.freeze_panes = self.s_ws[f'A{REPORT_START_ROW+2}']
         self.row_cursor += 1
         for idx, header in enumerate(SUMMARY_HEADERS):
             self.s_ws.cell(self.row_cursor, REPORT_START_COL + idx).value = header
@@ -210,14 +212,28 @@ class OrdersReport():
         self.s_ws.cell(self.row_cursor, REPORT_START_COL + 3).value = len(date_orders)
         self.s_ws.cell(self.row_cursor, REPORT_START_COL + 3).font = BOLD_STYLE
         # Separating regions, filling data:
-        VAT_orders = list(filter(lambda order: (order['item-tax'] > 0), date_orders))
-        NON_VAT_orders = list(filter(lambda order: (order['item-tax'] <= 0), date_orders))
+        VAT_orders, NON_VAT_orders = self.__split_by_region(date_orders)
         self.s_ws.cell(self.row_cursor, REPORT_START_COL + 4).value = self._get_segment_total(VAT_orders)
         self.s_ws.cell(self.row_cursor, REPORT_START_COL + 4).number_format = '#,##0.00'
         self.s_ws.cell(self.row_cursor, REPORT_START_COL + 5).value = len(VAT_orders)
         self.s_ws.cell(self.row_cursor, REPORT_START_COL + 6).value = self._get_segment_total(NON_VAT_orders)
         self.s_ws.cell(self.row_cursor, REPORT_START_COL + 6).number_format = '#,##0.00'
         self.s_ws.cell(self.row_cursor, REPORT_START_COL + 7).value = len(NON_VAT_orders)
+
+    def __split_by_region(self, orders:list):
+        '''similar to split_orders_by_tax_region' func in ParseOrders splits passed list of orders and returns two lists:
+        EU (VAT (item-tax) > 0) and NON-EU (VAT = 0)'''    
+        VAT_orders, NON_VAT_orders = [], []
+        for order in orders:
+            # forcing UK orders in NON-EU group, independent from item-tax value (brexit update; also in split_orders_by_tax_region in ParseOrders)
+            if order['ship-country'] == 'GB':
+                NON_VAT_orders.append(order)
+                continue
+            if float(order['item-tax']) > 0:
+                VAT_orders.append(order)
+            else:
+                NON_VAT_orders.append(order)
+        return VAT_orders, NON_VAT_orders
 
     @staticmethod
     def _get_segment_total(orders : list) -> float:
