@@ -10,13 +10,13 @@ import os
 
 # GLOBAL VARIABLES
 TESTING = False
-TEST_TODAY_DATE = '2020-04-19'
+TEST_TODAY_DATE = '2021-01-08'
 EXPECTED_SYS_ARGS = 2
 VBA_ERROR_ALERT = 'ERROR_CALL_DADDY'
 VBA_KEYERROR_ALERT = 'ERROR_IN_SOURCE_HEADERS'
 VBA_OK = 'EXPORTED_SUCCESSFULLY'
 if is_windows_machine():
-    TEST_AMZN_EXPORT_TXT = r'C:\Coding\Ebay\Working\Backups\Amazon exports\amzn2.txt'
+    TEST_AMZN_EXPORT_TXT = r'C:\Coding\Ebay\Working\Backups\Amazon exports\Collected exports\UK bad accounting numbers 2021.01.08.txt'
 else:
     TEST_AMZN_EXPORT_TXT = r'/home/devyo/Coding/Git/Amazon Accounting Report/Amazon exports/run1.txt'
 
