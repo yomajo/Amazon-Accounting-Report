@@ -240,7 +240,7 @@ class OrdersReport():
         '''Returns a sum of all orders' item-price + item-tax in list of order dicts'''
         total = 0
         for order in orders:
-            total += order['item-price'] + order['item-tax']
+            total += order['item-price'] + order['shipping-price']
         return round(total, 2)
 
 
