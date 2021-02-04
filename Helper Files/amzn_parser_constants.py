@@ -9,7 +9,8 @@ TEMPLATE_SHEET_MAPPING= {
         'Shipping' : 'shipping-price',
         'Shipping Tax' : 'shipping-tax',
         'Purchase' : 'purchase-date',
-        'Payment': 'payments-date'
+        'Payment' : 'payments-date',
+        'Country' : 'ship-country'
 }
 
-SUMMARY_HEADERS = ['Currency', '  Date ', '  Total', 'Total #', 'VAT   ', '  #', 'NON-VAT', '  #']
+SUMMARY_HEADERS = ['Currency', '  Date ', '  Total', 'Total #', 'VAT   ', '  #', 'NON-VAT', '  #', '', 'UK TAXES']

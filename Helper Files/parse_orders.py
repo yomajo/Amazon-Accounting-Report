@@ -39,6 +39,10 @@ class ParseOrders():
         '''splits all_orders into two lists: EU (VAT (item-tax) > 0) and NON-EU (VAT = 0); Exits if resulting lists are empty'''    
         for order in self.all_orders:
             try:
+                # forcing UK orders in NON-EU group, independent from item-tax value (brexit update; also in __split_by_region in OrdersReport):
+                if order['ship-country'] == 'GB':
+                    self.non_eu_orders.append(order)
+                    continue
                 if float(order['item-tax']) > 0:
                     self.eu_orders.append(order)
                 else:
@@ -112,7 +116,6 @@ class ParseOrders():
         if testing:
             logging.info(f'Due to flag testing value: {testing}. Order export and adding to database suspended. Change behaviour in export_orders method in ParseOrders class')
             print(f'Due to flag testing value: {testing}. Order export and adding to database suspended. Change behaviour in export_orders method in ParseOrders class')
-            self.db_client.close_connection()
             print('ENABLED REPORT EXPORT WHILE TESTING')
             self.export_report()
             # self.push_orders_to_db()

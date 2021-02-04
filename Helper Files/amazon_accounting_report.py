@@ -10,13 +10,13 @@ import os
 
 # GLOBAL VARIABLES
 TESTING = False
-TEST_TODAY_DATE = '2020-04-19'
+TEST_TODAY_DATE = '2021-02-08'
 EXPECTED_SYS_ARGS = 2
 VBA_ERROR_ALERT = 'ERROR_CALL_DADDY'
 VBA_KEYERROR_ALERT = 'ERROR_IN_SOURCE_HEADERS'
 VBA_OK = 'EXPORTED_SUCCESSFULLY'
 if is_windows_machine():
-    TEST_AMZN_EXPORT_TXT = r'C:\Coding\Ebay\Working\Backups\Amazon exports\amzn2.txt'
+    TEST_AMZN_EXPORT_TXT = r'C:\Coding\Ebay\Working\Backups\Amazon exports\Collected exports\export 2021.02.01.txt'
 else:
     TEST_AMZN_EXPORT_TXT = r'/home/devyo/Coding/Git/Amazon Accounting Report/Amazon exports/run1.txt'
 
@@ -54,6 +54,7 @@ def parse_export_orders(testing:bool, parse_orders:list, loaded_txt:str):
     new_orders = db_client.get_new_orders_only()
     logging.info(f'After checking with database, further processing: {len(new_orders)} new orders')
     ParseOrders(new_orders, db_client).export_orders(testing)
+    db_client.close_connection()
 
 def remove_todays_orders(orders:list) -> list :
     '''returns a list of orders dicts, whose purchase date up to, but not including today's date (deletes todays orders), alerts VBA'''
