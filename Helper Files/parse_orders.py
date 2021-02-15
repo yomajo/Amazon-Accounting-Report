@@ -26,6 +26,7 @@ class ParseOrders():
     def __init__(self, all_orders : list, db_client : object):
         self.all_orders = all_orders
         self.db_client = db_client
+        self.de_orders = []
         self.eu_orders = []
         self.non_eu_orders = []
     
@@ -35,7 +36,7 @@ class ParseOrders():
         date_stamp = datetime.today().strftime("%Y.%m.%d %H.%M")
         self.report_path = os.path.join(output_dir, f'Amazon Orders Report {date_stamp}.xlsx')
     
-    def split_orders_by_tax_region(self):
+    def split_orders_by_region(self):
         '''splits all_orders into two lists: EU (VAT (item-tax) > 0) and NON-EU (VAT = 0); Exits if resulting lists are empty'''    
         for order in self.all_orders:
             try:
@@ -43,6 +44,11 @@ class ParseOrders():
                 if order['ship-country'] == 'GB':
                     self.non_eu_orders.append(order)
                     continue
+
+                if order['ship-country'] == 'DE':
+                    self.de_orders.append(order)
+                    continue
+
                 if float(order['item-tax']) > 0:
                     self.eu_orders.append(order)
                 else:
@@ -79,14 +85,22 @@ class ParseOrders():
                             currency2: [order1, order2, order...],
                             currency_n : [order1, order2, order...]
                                 }
+                de_orders: {
+                            currency1: [order1, order2, order...],
+                            currency2: [order1, order2, order...],
+                            currency_n : [order1, order2, order...]
+                                }                
                     }'''
         eu_currency_grouped = self.get_region_currency_based_dict(self.eu_orders)
         non_eu_currency_grouped = self.get_region_currency_based_dict(self.non_eu_orders)
-        self.export_obj = {'EU' : eu_currency_grouped, 'NON-EU' : non_eu_currency_grouped}
+        de_currency_grouped = self.get_region_currency_based_dict(self.de_orders)
+        self.export_obj = {'EU' : eu_currency_grouped, 'NON-EU' : non_eu_currency_grouped, 'DE' : de_currency_grouped}
         return self.export_obj
 
     @staticmethod
     def get_region_currency_based_dict(region_orders : list) -> dict:
+        '''returns currency grouped dict.
+        Example: {'EUR': [order1, order2...], 'USD':[order1, order2...], ...}'''
         currency_based_dict = defaultdict(list)
         for order in region_orders:
             currency_based_dict[order['currency']].append(order)
@@ -111,7 +125,7 @@ class ParseOrders():
     def export_orders(self, testing=False):
         '''Summing up tasks inside ParseOrders class'''
         self._prepare_filepaths()
-        self.split_orders_by_tax_region()
+        self.split_orders_by_region()
         self.prepare_export_obj()        
         if testing:
             logging.info(f'Due to flag testing value: {testing}. Order export and adding to database suspended. Change behaviour in export_orders method in ParseOrders class')
