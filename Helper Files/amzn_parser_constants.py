@@ -13,4 +13,17 @@ TEMPLATE_SHEET_MAPPING= {
         'Country' : 'ship-country'
 }
 
-SUMMARY_HEADERS = ['Currency', '  Date ', '  Total', 'Total #', 'VAT   ', '  #', 'NON-VAT', '  #', '', 'UK TAXES']
+SUMMARY_HEADERS = ['Currency',
+                '  Date ',
+                '  Total',
+                'Total #',
+                'VAT   ',
+                '  #',
+                'NON-VAT',
+                '  #',
+                '',
+                'DE    ',
+                '  #',
+                'DE Taxes',
+                 '',
+                'UK TAXES']
