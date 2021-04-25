@@ -1,4 +1,4 @@
-from amzn_parser_constants import TEMPLATE_SHEET_MAPPING, SUMMARY_HEADERS
+from amzn_parser_constants import TEMPLATE_SHEET_MAPPING, EU_SUMMARY_HEADERS, COM_SUMMARY_HEADERS
 from amzn_parser_utils import simplify_date, col_to_letter
 from collections import defaultdict
 import openpyxl
@@ -15,8 +15,9 @@ REPORT_START_ROW = 1
 REPORT_START_COL = 1
 
 
-class OrdersReport():
-    '''accepts export data dictionary and output file path as arguments, creates individual
+class AmazonEUOrdersReport():
+    '''Indended for use of orders sold through Amazon EU sales channel
+    accepts export data dictionary and output file path as arguments, creates individual
     sheets for region & currency based order segregation, creates formatted xlsx report file.
     Error handling is present outside of this class.
 
@@ -30,7 +31,7 @@ class OrdersReport():
     
     def __init__(self, export_obj:dict):
         self.export_obj = self._clean_incoming_data(export_obj)
-        self.__get_report_objs()
+        self._get_report_objs()
 
     def _clean_incoming_data(self, export_obj:dict) -> dict:
         '''returns cleaned data in same structure as class input obj'''
@@ -61,7 +62,7 @@ class OrdersReport():
             order['shipping-tax'] = float(order['shipping-tax'])
         return orders
     
-    def __get_report_objs(self):
+    def _get_report_objs(self):
         '''prepares cls variables for excel report workbook filling'''
         self.segments_orders_obj = self._get_segments_orders_obj(self.export_obj)
         self.summary_table_obj = self._get_summary_table_obj(self.export_obj)
@@ -114,10 +115,10 @@ class OrdersReport():
         taxes_obj = copy.deepcopy(self.summary_table_obj)
         for currency, date_orders_dict in self.summary_table_obj.items():
             for date, date_orders in date_orders_dict.items():
-                taxes_obj[currency][date] = self.__calc_orders_taxes(date_orders, 'GB')
+                taxes_obj[currency][date] = self._calc_orders_taxes(date_orders, 'GB')
         return taxes_obj
 
-    def __calc_orders_taxes(self, orders:list, country_code:str) -> float:
+    def _calc_orders_taxes(self, orders:list, country_code:str) -> float:
         '''returns sum of (item-tax + shipping-tax) for each order inside list if order[ship-country] = country_code'''
         taxes = 0
         for order in orders:
@@ -129,13 +130,13 @@ class OrdersReport():
 
     def _data_to_sheet(self, ws_name:str, orders_data:list):
         '''creates new ws_name sheet and fills it with orders_data argument data'''
-        self.__create_sheet(ws_name)
+        self._create_sheet(ws_name)
         active_ws = self.wb[ws_name]
         active_ws.freeze_panes = active_ws['A2']
         self._fill_sheet(active_ws, orders_data)
         self._adjust_col_widths(active_ws, self.col_widths)
 
-    def __create_sheet(self, ws_name:str):
+    def _create_sheet(self, ws_name:str):
         '''creates new sheet obj with name ws_name'''
         self.wb.create_sheet(title=ws_name)
         self.col_widths = {}
@@ -146,11 +147,12 @@ class OrdersReport():
         self._write_sheet_orders(active_ws, orders_data)
 
     def _write_headers(self, ws:object):
+        '''writes header row to segment sheet'''
         for col, header in enumerate(SHEET_HEADERS):
-            self.__update_col_widths(col, header)
+            self._update_col_widths(col, header)
             ws.cell(1, col + 1).value = header
 
-    def __update_col_widths(self, col:int, cell_value:str, zero_indexed=True):
+    def _update_col_widths(self, col:int, cell_value:str, zero_indexed=True):
         '''runs on each cell. Forms a dictionary {'A':30, 'B':15...} for max column widths in worksheet (width as length of max cell)'''
         col_letter = col_to_letter(col, zero_indexed=zero_indexed)
         if col_letter in self.col_widths:
@@ -161,12 +163,13 @@ class OrdersReport():
             self.col_widths[col_letter] = len(cell_value)
 
     def _write_sheet_orders(self, ws, orders_data:list):
+        '''writes orders_data to segment sheet'''
         for row, col in self.range_generator(orders_data, SHEET_HEADERS):
-            working_dict = orders_data[row]
+            order_dict = orders_data[row]
             key_pointer = TEMPLATE_SHEET_MAPPING[SHEET_HEADERS[col]]
-            self.__update_col_widths(col, str(working_dict[key_pointer]))
+            self._update_col_widths(col, str(order_dict[key_pointer]))
             # offsets due to excel vs python numbering  + headers in row 1
-            ws.cell(row + 2, col + 1).value = working_dict[key_pointer]
+            ws.cell(row + 2, col + 1).value = order_dict[key_pointer]
 
     @staticmethod
     def range_generator(orders_data, headers):
@@ -188,53 +191,53 @@ class OrdersReport():
         self.s_ws = self.wb[SUMMARY_SHEET_NAME]
         self.col_widths = {}   
         self.row_cursor = REPORT_START_ROW
-        self.__add_summary_headers()
-        self.__color_table_headers()
+        self._add_summary_headers()
+        self._color_table_headers()
         # Add data for each currency:
         for currency, date_objs in self.summary_table_obj.items():
-            self.__apply_horizontal_line(self.row_cursor)
+            self._apply_horizontal_line(self.row_cursor)
             self.s_ws.cell(self.row_cursor, REPORT_START_COL).value = currency
             self.s_ws.cell(self.row_cursor, REPORT_START_COL).font = BOLD_STYLE
             # Writing data to rest of columns:
             for date, date_orders in date_objs.items():
                 self.s_ws.cell(self.row_cursor, REPORT_START_COL + 1).value = date
-                self.__fill_format_date_data(date_orders)
+                self._fill_format_date_data(date_orders)
                 uk_tax = self.summary_taxes_obj[currency][date]
                 self.s_ws.cell(self.row_cursor, REPORT_START_COL + 13).value = uk_tax
                 self.row_cursor += 1
         # Adjust column widths
         self._adjust_col_widths(self.s_ws, self.col_widths, summary=True)
 
-    def __add_summary_headers(self):
+    def _add_summary_headers(self):
         '''writes fixed headers in summary sheet, freeze pane'''
         self.s_ws.cell(self.row_cursor, REPORT_START_COL + 4).value = 'Daily Breakdown'
         self.s_ws.cell(self.row_cursor, REPORT_START_COL + 4).font = BOLD_STYLE
         self.s_ws.freeze_panes = self.s_ws[f'A{REPORT_START_ROW + 2}']
         self.row_cursor += 1
-        for idx, header in enumerate(SUMMARY_HEADERS):
+        for idx, header in enumerate(EU_SUMMARY_HEADERS):
             self.s_ws.cell(self.row_cursor, REPORT_START_COL + idx).value = header
-            self.__update_col_widths(REPORT_START_COL + idx, header, zero_indexed=False)
+            self._update_col_widths(REPORT_START_COL + idx, header, zero_indexed=False)
             self.s_ws.cell(self.row_cursor, REPORT_START_COL + idx).font = BOLD_STYLE
         self.row_cursor += 1
 
-    def __color_table_headers(self):
+    def _color_table_headers(self):
         '''Colors range defined in generator in summary sheet'''
-        for row, col in self.__header_cells_generator():
+        for row, col in self._header_cells_generator():
             self.s_ws.cell(row, col).fill = BACKGROUND_COLOR_STYLE
     
     @staticmethod
-    def __header_cells_generator():
+    def _header_cells_generator():
         '''generator for daily breakdown headers coloring, yields row, col'''
         for row in [REPORT_START_ROW, REPORT_START_ROW + 1]:
-            for col in range(REPORT_START_COL, len(SUMMARY_HEADERS) + REPORT_START_COL):
+            for col in range(REPORT_START_COL, len(EU_SUMMARY_HEADERS) + REPORT_START_COL):
                 yield row, col
 
-    def __apply_horizontal_line(self, row:int):
-        '''adds horizonal line through A:H (c=1 case) in summary sheet at argument row top'''
-        for col in range(REPORT_START_COL, len(SUMMARY_HEADERS) + REPORT_START_COL):
+    def _apply_horizontal_line(self, row:int):
+        '''adds horizonal line through A:N (c=1 case) in summary sheet at argument row top'''
+        for col in range(REPORT_START_COL, len(EU_SUMMARY_HEADERS) + REPORT_START_COL):
             self.s_ws.cell(row, col).border = openpyxl.styles.Border(top=THIN_BORDER)
     
-    def __fill_format_date_data(self, date_orders:list):
+    def _fill_format_date_data(self, date_orders:list):
         '''calculates neccessary data and fills, formats data in summary sheet in single row'''
         # Data does not update column widths, only headers. If data formats, scope were to change, function shall be updated 
         self.s_ws.cell(self.row_cursor, REPORT_START_COL + 2).value = self._get_segment_total(date_orders)
@@ -243,7 +246,7 @@ class OrdersReport():
         self.s_ws.cell(self.row_cursor, REPORT_START_COL + 3).value = len(date_orders)
         self.s_ws.cell(self.row_cursor, REPORT_START_COL + 3).font = BOLD_STYLE
         # Separating regions, filling data:
-        de_orders, VAT_orders, NON_VAT_orders = self.__split_by_region(date_orders)
+        de_orders, VAT_orders, NON_VAT_orders = self._split_by_region(date_orders)
         self.s_ws.cell(self.row_cursor, REPORT_START_COL + 4).value = self._get_segment_total(VAT_orders)
         self.s_ws.cell(self.row_cursor, REPORT_START_COL + 4).number_format = '#,##0.00'
         self.s_ws.cell(self.row_cursor, REPORT_START_COL + 5).value = len(VAT_orders)
@@ -255,10 +258,10 @@ class OrdersReport():
         self.s_ws.cell(self.row_cursor, REPORT_START_COL + 9).value = self._get_segment_total(de_orders)
         self.s_ws.cell(self.row_cursor, REPORT_START_COL + 9).number_format = '#,##0.00'
         self.s_ws.cell(self.row_cursor, REPORT_START_COL + 10).value = len(de_orders)
-        self.s_ws.cell(self.row_cursor, REPORT_START_COL + 11).value = self.__calc_orders_taxes(de_orders, 'DE')
+        self.s_ws.cell(self.row_cursor, REPORT_START_COL + 11).value = self._calc_orders_taxes(de_orders, 'DE')
 
 
-    def __split_by_region(self, orders:list):
+    def _split_by_region(self, orders:list):
         '''similar to split_orders_by_region' func in ParseOrders splits passed list of orders and returns 3 lists:
         1. de orders
         2. EU (VAT (item-tax) > 0)
@@ -282,7 +285,7 @@ class OrdersReport():
 
     @staticmethod
     def _get_segment_total(orders:list) -> float:
-        '''Returns a sum of all orders' item-price + item-tax in list of order dicts'''
+        '''Returns a sum of all orders' item-price + shipping-price in list of order dicts'''
         total = 0
         for order in orders:
             total += order['item-price'] + order['shipping-price']
@@ -300,6 +303,139 @@ class OrdersReport():
         self.fill_format_summary()
         self.wb.save(wb_name)
         self.wb.close()
+
+
+class AmazonCOMOrdersReport(AmazonEUOrdersReport):
+    '''Indended for use of orders sold through Amazon COM sales channel. Simplified report version
+    based on (inherited from) AmazonEUOrdersReport class
+    
+    accepts export data dictionary and output file path as arguments, creates individual
+    sheets for region & currency based order segregation, creates formatted xlsx report file.
+    Error handling is present outside of this class.
+
+    Expected input obj format:
+        {eu_orders: {currency1: [order1, order2, order...], currency2: [order1, order2, order...], ...},
+        non_eu_orders: {currency1: [order1, order2, order...], currency2: [order1, order2, order...] ...},
+        de_orders: {currency1: [order1, order2, order...], currency2: [order1, order2, order...] ...} }
+    
+    eu_countries: list of eu member countries as ['EE', 'LV', 'LT', 'FI', ...]
+
+    Main method: export() - creates individual sheets, pushes selected data from corresponding orders;
+    creates summary sheet, calculates regional / currency based totals'''
+
+    def __init__(self, export_obj:dict, eu_countries:list):
+        super().__init__(export_obj)
+        # self.export_obj = self._clean_incoming_data(export_obj)
+        self.eu_countries = eu_countries
+        # self._get_report_objs()
+
+    def _get_report_objs(self):
+        '''prepares cls variables for excel report workbook filling'''
+        self.segments_orders_obj = self._get_segments_orders_obj(self.export_obj)
+        self.summary_table_obj = self._get_summary_table_obj(self.export_obj)
+        self.summary_taxes_obj = self._get_summary_taxes_obj()
+
+    def _get_summary_taxes_obj(self):
+        '''Returns currency and date based calculated taxes for UK orders (item-tax + shipping)
+        
+        self.summary_table_obj:
+        {'EUR':{'date1':[order1, order2...], 'date2':[order3, order4...], ...},
+        'GBP':{'date1':[order1, order2...], 'date2':[order1, order2...], ...}, ...}
+
+        function returns:
+        {'EUR':{'date1':calculated_taxes1, 'date2':calculated_taxes2, ...},
+        'GBP':{'date1':calculated_taxes3, 'date2':calculated_taxes4, ...}, ...}'''
+        taxes_obj = copy.deepcopy(self.summary_table_obj)
+        for currency, date_orders_dict in self.summary_table_obj.items():
+            for date, date_orders in date_orders_dict.items():
+                taxes_obj[currency][date] = self._calc_orders_taxes(date_orders)
+        return taxes_obj
+
+    def _calc_orders_taxes(self, orders:list) -> float:
+        '''returns sum of (item-tax + shipping-tax) for each order inside orders list'''
+        taxes = 0
+        for order in orders:
+            taxes += order['item-tax']
+            taxes += order['shipping-tax']
+        return round(taxes, 2)
+
+    def fill_format_summary(self):
+        '''Forms a summary sheet report unpacks self.summary_table_obj to dynamic height table,
+        change insert point of table with:
+        REPORT_START_ROW, REPORT_START_COL'''
+        self.s_ws = self.wb[SUMMARY_SHEET_NAME]
+        self.col_widths = {}   
+        self.row_cursor = REPORT_START_ROW
+        self._add_summary_headers()
+        self._color_table_headers()
+        # Add data for each currency:
+        for currency, date_objs in self.summary_table_obj.items():
+            self._apply_horizontal_line(self.row_cursor)
+            self.s_ws.cell(self.row_cursor, REPORT_START_COL).value = currency
+            self.s_ws.cell(self.row_cursor, REPORT_START_COL).font = BOLD_STYLE
+            # Writing data to rest of columns:
+            for date, date_orders in date_objs.items():
+                self.s_ws.cell(self.row_cursor, REPORT_START_COL + 1).value = date
+                self._fill_format_date_data(date_orders)
+                taxes = self.summary_taxes_obj[currency][date]
+                self.s_ws.cell(self.row_cursor, REPORT_START_COL + 9).value = taxes
+                self.row_cursor += 1
+        # Adjust column widths
+        self._adjust_col_widths(self.s_ws, self.col_widths, summary=True)
+
+    def _add_summary_headers(self):
+        '''writes fixed headers in summary sheet, freeze pane'''
+        self.s_ws.cell(self.row_cursor, REPORT_START_COL + 4).value = 'Daily Breakdown'
+        self.s_ws.cell(self.row_cursor, REPORT_START_COL + 4).font = BOLD_STYLE
+        self.s_ws.freeze_panes = self.s_ws[f'A{REPORT_START_ROW + 2}']
+        self.row_cursor += 1
+        for idx, header in enumerate(COM_SUMMARY_HEADERS):
+            self.s_ws.cell(self.row_cursor, REPORT_START_COL + idx).value = header
+            self._update_col_widths(REPORT_START_COL + idx, header, zero_indexed=False)
+            self.s_ws.cell(self.row_cursor, REPORT_START_COL + idx).font = BOLD_STYLE
+        self.row_cursor += 1
+    
+    @staticmethod
+    def _header_cells_generator():
+        '''generator for daily breakdown headers coloring, yields row, col'''
+        for row in [REPORT_START_ROW, REPORT_START_ROW + 1]:
+            for col in range(REPORT_START_COL, len(COM_SUMMARY_HEADERS) + REPORT_START_COL):
+                yield row, col
+
+    def _apply_horizontal_line(self, row:int):
+        '''adds horizonal line through A:J (c=1 case) in summary sheet at argument row top'''
+        for col in range(REPORT_START_COL, len(COM_SUMMARY_HEADERS) + REPORT_START_COL):
+            self.s_ws.cell(row, col).border = openpyxl.styles.Border(top=THIN_BORDER)    
+
+    def _fill_format_date_data(self, date_orders:list):
+        '''calculates neccessary data and fills, formats data in summary sheet in single row'''
+        # Data does not update column widths, only headers. If data formats, scope were to change, function shall be updated 
+        self.s_ws.cell(self.row_cursor, REPORT_START_COL + 2).value = self._get_segment_total(date_orders)
+        self.s_ws.cell(self.row_cursor, REPORT_START_COL + 2).font = BOLD_STYLE
+        self.s_ws.cell(self.row_cursor, REPORT_START_COL + 2).number_format = '#,##0.00'
+        self.s_ws.cell(self.row_cursor, REPORT_START_COL + 3).value = len(date_orders)
+        self.s_ws.cell(self.row_cursor, REPORT_START_COL + 3).font = BOLD_STYLE
+        # Separating regions, filling data:
+        eu_orders, non_eu_orders = self._split_by_region(date_orders)
+        self.s_ws.cell(self.row_cursor, REPORT_START_COL + 4).value = self._get_segment_total(eu_orders)
+        self.s_ws.cell(self.row_cursor, REPORT_START_COL + 4).number_format = '#,##0.00'
+        self.s_ws.cell(self.row_cursor, REPORT_START_COL + 5).value = len(eu_orders)
+
+        self.s_ws.cell(self.row_cursor, REPORT_START_COL + 6).value = self._get_segment_total(non_eu_orders)
+        self.s_ws.cell(self.row_cursor, REPORT_START_COL + 6).number_format = '#,##0.00'
+        self.s_ws.cell(self.row_cursor, REPORT_START_COL + 7).value = len(non_eu_orders)
+
+    def _split_by_region(self, orders:list):
+        '''splits provided list of orders into two lists based on order['ship-country'] EU membership:
+        1. eu orders
+        2. non-eu orders'''    
+        eu_orders, non_eu_orders = [], []
+        for order in orders:
+            if order['ship-country'] in self.eu_countries:
+                eu_orders.append(order)
+            else:
+                non_eu_orders.append(order)
+        return eu_orders, non_eu_orders
 
 
 if __name__ == "__main__":

@@ -1,4 +1,5 @@
 from amzn_parser_utils import get_output_dir, get_datetime_obj, alert_vba_date_count, is_windows_machine
+from amzn_parser_constants import EXPECTED_AMZN_CHANNELS
 from parse_orders import ParseOrders
 from orders_db import OrdersDB
 from datetime import datetime
@@ -10,18 +11,20 @@ import os
 
 # GLOBAL VARIABLES
 TESTING = False
-TEST_TODAY_DATE = '2021-02-15'
-EXPECTED_SYS_ARGS = 2
+AMZN_CHANNEL = 'COM'
+TEST_TODAY_DATE = '2021-04-23'
+EXPECTED_SYS_ARGS = 3
 VBA_ERROR_ALERT = 'ERROR_CALL_DADDY'
 VBA_KEYERROR_ALERT = 'ERROR_IN_SOURCE_HEADERS'
 VBA_OK = 'EXPORTED_SUCCESSFULLY'
 if is_windows_machine():
-    TEST_AMZN_EXPORT_TXT = r'C:\Coding\Ebay\Working\Backups\Amazon exports\Collected exports\export 2021.02.01.txt'
+    # TEST_AMZN_EXPORT_TXT = r'C:\Coding\Ebay\Working\Backups\Amazon exports\Collected exports\export 2021.02.01.txt'
+    TEST_AMZN_EXPORT_TXT = r'C:\Coding\Ebay\Working\Backups\Amazon exports\Collected exports\amazonCOM 2021.04.14.txt'
 else:
     TEST_AMZN_EXPORT_TXT = r'/home/devyo/Coding/Git/Amazon Accounting Report/Amazon exports/run1.txt'
 
 # Logging config:
-log_path = os.path.join(get_output_dir(client_file=False), 'amazon_accounting.log')
+log_path = os.path.join(get_output_dir(client_file=False), 'report.log')
 logging.basicConfig(handlers=[logging.FileHandler(log_path, 'a', 'utf-8')], level=logging.INFO)
 
 
@@ -48,15 +51,15 @@ def clean_orders(orders:list) -> list:
             print(VBA_KEYERROR_ALERT)
     return orders
 
-def parse_export_orders(testing:bool, parse_orders:list, loaded_txt:str):
+def parse_export_orders(testing:bool, parse_orders:list, loaded_txt:str, amzn_channel:str):
     '''interacts with classes (ParseOrders, OrdersDB) to filter new orders, export desired files and push new orders to db'''
     db_client = OrdersDB(parse_orders, loaded_txt)
     new_orders = db_client.get_new_orders_only()
     logging.info(f'After checking with database, further processing: {len(new_orders)} new orders')
-    ParseOrders(new_orders, db_client).export_orders(testing)
+    ParseOrders(new_orders, amzn_channel, db_client).export_orders(testing)
     db_client.close_connection()
 
-def remove_todays_orders(orders:list) -> list :
+def remove_todays_orders(orders:list) -> list:
     '''returns a list of orders dicts, whose purchase date up to, but not including today's date (deletes todays orders), alerts VBA'''
     try:
         today_date = get_today_obj(TESTING)
@@ -84,28 +87,32 @@ def parse_args():
     '''accepts txt_path from as command line argument'''
     if len(sys.argv) == EXPECTED_SYS_ARGS:
         txt_path = sys.argv[1]
-        logging.info(f'Accepted sys args on launch: txt_path: {txt_path}')
-        return txt_path
+        amzn_channel = sys.argv[2]
+        assert amzn_channel in EXPECTED_AMZN_CHANNELS, 'Got unexpected amzn_channel from VBA'
+        logging.info(f'Accepted sys args on launch: txt_path: {txt_path}, amzn_channel: {amzn_channel}')
+        return txt_path, amzn_channel
     else:
         print(VBA_ERROR_ALERT)
-        logging.critical(f'Error parsing arguments on script initialization in cmd. Arguments provided: {len(sys.argv)} Expected: {EXPECTED_SYS_ARGS}')
+        logging.critical(f'Error parsing arguments on script initialization in cmd. Arguments provided: {len(sys.argv)} Expected: {EXPECTED_SYS_ARGS}. Got from VBA: {sys.argv}')
         sys.exit()
 
 
 def main(testing, amazon_export_txt_path):
     '''Main function executing parsing of provided txt file and outputing csv, xlsx files'''
     logging.info(f'\n NEW RUN STARTING: {datetime.today().strftime("%Y.%m.%d %H:%M")}')    
-    if not testing:
-        txt_path = parse_args()
-    else:
+    if testing:
         print('RUNNING IN TESTING MODE')
         txt_path = amazon_export_txt_path
+        amzn_channel = AMZN_CHANNEL
+    else:
+        txt_path, amzn_channel = parse_args()
+    
     if os.path.exists(txt_path):
         logging.info('file exists, continuing to processing...')
         print(f'File {os.path.basename(txt_path)} exists')
         cleaned_source_orders = get_cleaned_orders(txt_path)
         orders_for_parsing = remove_todays_orders(cleaned_source_orders)
-        parse_export_orders(testing, orders_for_parsing, txt_path)
+        parse_export_orders(testing, orders_for_parsing, txt_path, amzn_channel)
         print(VBA_OK)
     else:
         logging.critical(f'Provided file {txt_path} does not exist.')

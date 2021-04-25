@@ -97,5 +97,18 @@ def export_json_data(dataobj : dict, json_path : str ='export.json'):
     with open(json_path, 'w') as f:
         json.dump(dataobj, f, indent=4)
 
+def get_EU_countries_from_txt(txt_abspath:str) -> list:
+    '''reads countries ISO codes listed each on new line and returns list of EU member countries'''
+    countries = []
+    try:
+        with open(txt_abspath, 'r') as f:
+            for line in f.readlines():
+                countries.append(line.strip())
+        return countries
+    except Exception as e:
+        logging.critical(f'Error reading EU countries from txt file: {txt_abspath}. Err: {e}. Alerting VBA, terminating immediately.')
+        print(VBA_ERROR_ALERT)
+        sys.exit()
+
 if __name__ == "__main__":
     pass

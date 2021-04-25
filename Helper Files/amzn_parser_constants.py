@@ -13,7 +13,7 @@ TEMPLATE_SHEET_MAPPING= {
         'Country' : 'ship-country'
 }
 
-SUMMARY_HEADERS = ['Currency',
+EU_SUMMARY_HEADERS = ['Currency',
                 '  Date ',
                 '  Total',
                 'Total #',
@@ -27,3 +27,17 @@ SUMMARY_HEADERS = ['Currency',
                 'DE Taxes',
                  '',
                 'UK TAXES']
+
+
+COM_SUMMARY_HEADERS = ['Currency',
+                '  Date ',
+                '  Total',
+                'Total #',
+                'EU   ',
+                '  #',
+                'NON-EU',
+                '  #',
+                '',
+                'TAXES    ']
+
+EXPECTED_AMZN_CHANNELS = ['EU', 'COM']
