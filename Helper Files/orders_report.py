@@ -355,16 +355,6 @@ class AmazonCOMOrdersReport(AmazonEUOrdersReport):
     Main method: export() - creates individual sheets, pushes selected data from corresponding orders;
     creates summary sheet, calculates regional / currency based totals'''
 
-    # def __init__(self, export_obj:dict, eu_countries:list):
-    #     super().__init__(export_obj)
-    #     self.eu_countries = eu_countries
-
-    def _get_report_objs(self):
-        '''prepares cls variables for excel report workbook filling'''
-        self.segments_orders_obj = self._get_segments_orders_obj(self.export_obj)
-        self.summary_table_obj = self._get_summary_table_obj(self.export_obj)
-        self.summary_taxes_obj = self._get_summary_taxes_obj()
-
     def _get_summary_taxes_obj(self):
         '''Returns currency and date based calculated taxes for UK orders (item-tax + shipping)
         
