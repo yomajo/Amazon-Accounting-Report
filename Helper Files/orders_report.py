@@ -1,5 +1,5 @@
 from amzn_parser_constants import TEMPLATE_SHEET_MAPPING, EU_SUMMARY_HEADERS, COM_SUMMARY_HEADERS
-from amzn_parser_utils import simplify_date, col_to_letter
+from amzn_parser_utils import simplify_date, col_to_letter, get_last_used_row_col
 from collections import defaultdict
 import openpyxl
 import copy
@@ -23,14 +23,16 @@ class AmazonEUOrdersReport():
 
     Expected input obj format: 
         {eu_orders: {currency1: [order1, order2, order...], currency2: [order1, order2, order...], ...},
-        non_eu_orders: {currency1: [order1, order2, order...], currency2: [order1, order2, order...] ...},
-        de_orders: {currency1: [order1, order2, order...], currency2: [order1, order2, order...] ...} }
+        non_eu_orders: {currency1: [order1, order2, order...], currency2: [order1, order2, order...] ...}}
+    
+    eu_countries: list of eu member countries as ['EE', 'LV', 'LT', 'FI', ...]
     
     Main method: export() - creates individual sheets, pushes selected data from corresponding orders;
     creates summary sheet, calculates regional / currency based totals'''
     
-    def __init__(self, export_obj:dict):
+    def __init__(self, export_obj:dict, eu_countries:list):
         self.export_obj = self._clean_incoming_data(export_obj)
+        self.eu_countries = eu_countries
         self._get_report_objs()
 
     def _clean_incoming_data(self, export_obj:dict) -> dict:
@@ -190,9 +192,9 @@ class AmazonEUOrdersReport():
         REPORT_START_ROW, REPORT_START_COL'''
         self.s_ws = self.wb[SUMMARY_SHEET_NAME]
         self.col_widths = {}   
+        self.eu_countries_header_cols = {}
         self.row_cursor = REPORT_START_ROW
         self._add_summary_headers()
-        self._color_table_headers()
         # Add data for each currency:
         for currency, date_objs in self.summary_table_obj.items():
             self._apply_horizontal_line(self.row_cursor)
@@ -203,16 +205,16 @@ class AmazonEUOrdersReport():
                 self.s_ws.cell(self.row_cursor, REPORT_START_COL + 1).value = date
                 self._fill_format_date_data(date_orders)
                 uk_tax = self.summary_taxes_obj[currency][date]
-                self.s_ws.cell(self.row_cursor, REPORT_START_COL + 13).value = uk_tax
+                self.s_ws.cell(self.row_cursor, REPORT_START_COL + 7).value = uk_tax
                 self.row_cursor += 1
-        # Adjust column widths
+        self._color_table_headers()
         self._adjust_col_widths(self.s_ws, self.col_widths, summary=True)
 
     def _add_summary_headers(self):
-        '''writes fixed headers in summary sheet, freeze pane'''
+        '''writes fixed headers in summary sheet, freeze panes'''
         self.s_ws.cell(self.row_cursor, REPORT_START_COL + 4).value = 'Daily Breakdown'
         self.s_ws.cell(self.row_cursor, REPORT_START_COL + 4).font = BOLD_STYLE
-        self.s_ws.freeze_panes = self.s_ws[f'A{REPORT_START_ROW + 2}']
+        self.s_ws.freeze_panes = self.s_ws[f'C{REPORT_START_ROW + 2}']
         self.row_cursor += 1
         for idx, header in enumerate(EU_SUMMARY_HEADERS):
             self.s_ws.cell(self.row_cursor, REPORT_START_COL + idx).value = header
@@ -222,19 +224,21 @@ class AmazonEUOrdersReport():
 
     def _color_table_headers(self):
         '''Colors range defined in generator in summary sheet'''
-        for row, col in self._header_cells_generator():
+        # max col used should be len of keys in self.col_widths
+        max_col = len(self.col_widths.keys())
+        for row, col in self._header_cells_generator(max_col):
             self.s_ws.cell(row, col).fill = BACKGROUND_COLOR_STYLE
     
     @staticmethod
-    def _header_cells_generator():
+    def _header_cells_generator(max_col:int):
         '''generator for daily breakdown headers coloring, yields row, col'''
         for row in [REPORT_START_ROW, REPORT_START_ROW + 1]:
-            for col in range(REPORT_START_COL, len(EU_SUMMARY_HEADERS) + REPORT_START_COL):
+            for col in range(REPORT_START_COL, max_col):
                 yield row, col
 
     def _apply_horizontal_line(self, row:int):
-        '''adds horizonal line through A:N (c=1 case) in summary sheet at argument row top'''
-        for col in range(REPORT_START_COL, len(EU_SUMMARY_HEADERS) + REPORT_START_COL):
+        '''adds horizonal line through 100 cols (c=1 case) in summary sheet at argument row top'''
+        for col in range(REPORT_START_COL, REPORT_START_COL + 99):
             self.s_ws.cell(row, col).border = openpyxl.styles.Border(top=THIN_BORDER)
     
     def _fill_format_date_data(self, date_orders:list):
@@ -246,42 +250,23 @@ class AmazonEUOrdersReport():
         self.s_ws.cell(self.row_cursor, REPORT_START_COL + 3).value = len(date_orders)
         self.s_ws.cell(self.row_cursor, REPORT_START_COL + 3).font = BOLD_STYLE
         # Separating regions, filling data:
-        de_orders, VAT_orders, NON_VAT_orders = self._split_by_region(date_orders)
-        self.s_ws.cell(self.row_cursor, REPORT_START_COL + 4).value = self._get_segment_total(VAT_orders)
+        eu_orders, non_eu_orders = self._split_by_region(date_orders)
+        self.s_ws.cell(self.row_cursor, REPORT_START_COL + 4).value = self._get_segment_total(non_eu_orders)
         self.s_ws.cell(self.row_cursor, REPORT_START_COL + 4).number_format = '#,##0.00'
-        self.s_ws.cell(self.row_cursor, REPORT_START_COL + 5).value = len(VAT_orders)
-
-        self.s_ws.cell(self.row_cursor, REPORT_START_COL + 6).value = self._get_segment_total(NON_VAT_orders)
-        self.s_ws.cell(self.row_cursor, REPORT_START_COL + 6).number_format = '#,##0.00'
-        self.s_ws.cell(self.row_cursor, REPORT_START_COL + 7).value = len(NON_VAT_orders)
-
-        self.s_ws.cell(self.row_cursor, REPORT_START_COL + 9).value = self._get_segment_total(de_orders)
-        self.s_ws.cell(self.row_cursor, REPORT_START_COL + 9).number_format = '#,##0.00'
-        self.s_ws.cell(self.row_cursor, REPORT_START_COL + 10).value = len(de_orders)
-        self.s_ws.cell(self.row_cursor, REPORT_START_COL + 11).value = self._calc_orders_taxes(de_orders, 'DE')
-
+        self.s_ws.cell(self.row_cursor, REPORT_START_COL + 5).value = len(non_eu_orders)
+        self._fill_summary_country_columns(eu_orders)
 
     def _split_by_region(self, orders:list):
-        '''similar to split_orders_by_region' func in ParseOrders splits passed list of orders and returns 3 lists:
-        1. de orders
-        2. EU (VAT (item-tax) > 0)
-        3. NON-EU (VAT = 0)'''    
-        de_orders , VAT_orders, NON_VAT_orders = [], [], []
+        '''splits provided list of orders into two lists based on order['ship-country'] EU membership:
+        1. eu orders
+        2. non-eu orders'''    
+        eu_orders, non_eu_orders = [], []
         for order in orders:
-            if order['ship-country'] == 'DE':
-                de_orders.append(order)
-                continue
-
-            # forcing UK orders in NON-EU group, independent from item-tax value (brexit update; also in split_orders_by_tax_region in ParseOrders)
-            if order['ship-country'] == 'GB':
-                NON_VAT_orders.append(order)
-                continue
-
-            if float(order['item-tax']) > 0:
-                VAT_orders.append(order)
+            if order['ship-country'] in self.eu_countries:
+                eu_orders.append(order)
             else:
-                NON_VAT_orders.append(order)
-        return de_orders, VAT_orders, NON_VAT_orders
+                non_eu_orders.append(order)
+        return eu_orders, non_eu_orders
 
     @staticmethod
     def _get_segment_total(orders:list) -> float:
@@ -290,6 +275,54 @@ class AmazonEUOrdersReport():
         for order in orders:
             total += order['item-price'] + order['shipping-price']
         return round(total, 2)
+
+    def _fill_summary_country_columns(self, eu_orders:list):
+        '''fills individual eu countries data to separate columns'''
+        countries_orders = self._get_country_based_dict(eu_orders)
+        # Iterate countries, identify target/new column
+        for country, country_orders in countries_orders.items():
+            if country in self.eu_countries_header_cols.keys():
+                ref_col = self.eu_countries_header_cols[country]
+            else:
+                last_used_row_col = get_last_used_row_col(self.s_ws)
+                ref_col = last_used_row_col['max_col'] + 1
+                # Enter data for existing self.row_cursor and new_col
+                self._enter_new_country_header(country, ref_col)  
+
+            # Add corresponding data in added/existing ref_col
+            self._enter_format_country_date_data(country_orders, country, ref_col)
+
+    def _get_country_based_dict(self, orders:list) -> dict:
+        '''Splits list of orders to country based dict
+        Returns:    {'DE': [order1, order2, ...], 'IT': [order1, order2, ...], ...}'''
+        country_based_dict = defaultdict(list)
+        for order in orders:
+            country_code = order['ship-country']
+            country_based_dict[country_code].append(order)
+        return country_based_dict
+    
+    def _enter_new_country_header(self, country:str, ref_col:int):
+        '''enter new country header col values, adjust col widths'''
+        self.__enter_header_bold_update_col_widths(REPORT_START_ROW + 1, ref_col, f'{country} Sum')
+        self.__enter_header_bold_update_col_widths(REPORT_START_ROW + 1, ref_col + 1, f'{country} #')
+        self.__enter_header_bold_update_col_widths(REPORT_START_ROW + 1, ref_col + 2, f'{country} Taxes')
+        # # gap column between countries
+        self.__enter_header_bold_update_col_widths(REPORT_START_ROW + 1, ref_col + 3, ' ')
+        # Update cls col reference dict
+        self.eu_countries_header_cols[country] = ref_col
+    
+    def __enter_header_bold_update_col_widths(self, row:int, col:int, header:str):
+        '''enters header value, bolds it, updates col widths dict'''
+        self.s_ws.cell(row, col).value = header
+        self._update_col_widths(col, header, zero_indexed=False)
+        self.s_ws.cell(row, col).font = BOLD_STYLE
+
+    def _enter_format_country_date_data(self, country_orders:list, country:str, ref_col:int):
+        '''add total, count, taxes for currency>date>country orders at self.row_cursor, ref_col, formats number format'''
+        self.s_ws.cell(self.row_cursor, ref_col).value = self._get_segment_total(country_orders)
+        self.s_ws.cell(self.row_cursor, ref_col).number_format = '#,##0.00'
+        self.s_ws.cell(self.row_cursor, ref_col + 1).value = len(country_orders)
+        self.s_ws.cell(self.row_cursor, ref_col + 2).value = self._calc_orders_taxes(country_orders, country)
 
 
     def export(self, wb_name:str):
@@ -306,7 +339,7 @@ class AmazonEUOrdersReport():
 
 
 class AmazonCOMOrdersReport(AmazonEUOrdersReport):
-    '''Indended for use of orders sold through Amazon COM sales channel. Simplified report version
+    '''Intended for use of orders sold through Amazon COM sales channel. Simplified report version
     based on (inherited from) AmazonEUOrdersReport class
     
     accepts export data dictionary and output file path as arguments, creates individual
@@ -315,19 +348,16 @@ class AmazonCOMOrdersReport(AmazonEUOrdersReport):
 
     Expected input obj format:
         {eu_orders: {currency1: [order1, order2, order...], currency2: [order1, order2, order...], ...},
-        non_eu_orders: {currency1: [order1, order2, order...], currency2: [order1, order2, order...] ...},
-        de_orders: {currency1: [order1, order2, order...], currency2: [order1, order2, order...] ...} }
+        non_eu_orders: {currency1: [order1, order2, order...], currency2: [order1, order2, order...] ...}}
     
     eu_countries: list of eu member countries as ['EE', 'LV', 'LT', 'FI', ...]
 
     Main method: export() - creates individual sheets, pushes selected data from corresponding orders;
     creates summary sheet, calculates regional / currency based totals'''
 
-    def __init__(self, export_obj:dict, eu_countries:list):
-        super().__init__(export_obj)
-        # self.export_obj = self._clean_incoming_data(export_obj)
-        self.eu_countries = eu_countries
-        # self._get_report_objs()
+    # def __init__(self, export_obj:dict, eu_countries:list):
+    #     super().__init__(export_obj)
+    #     self.eu_countries = eu_countries
 
     def _get_report_objs(self):
         '''prepares cls variables for excel report workbook filling'''
@@ -395,6 +425,11 @@ class AmazonCOMOrdersReport(AmazonEUOrdersReport):
             self.s_ws.cell(self.row_cursor, REPORT_START_COL + idx).font = BOLD_STYLE
         self.row_cursor += 1
     
+    def _color_table_headers(self):
+        '''Colors range defined in generator in summary sheet'''
+        for row, col in self._header_cells_generator():
+            self.s_ws.cell(row, col).fill = BACKGROUND_COLOR_STYLE
+
     @staticmethod
     def _header_cells_generator():
         '''generator for daily breakdown headers coloring, yields row, col'''
@@ -424,18 +459,6 @@ class AmazonCOMOrdersReport(AmazonEUOrdersReport):
         self.s_ws.cell(self.row_cursor, REPORT_START_COL + 6).value = self._get_segment_total(non_eu_orders)
         self.s_ws.cell(self.row_cursor, REPORT_START_COL + 6).number_format = '#,##0.00'
         self.s_ws.cell(self.row_cursor, REPORT_START_COL + 7).value = len(non_eu_orders)
-
-    def _split_by_region(self, orders:list):
-        '''splits provided list of orders into two lists based on order['ship-country'] EU membership:
-        1. eu orders
-        2. non-eu orders'''    
-        eu_orders, non_eu_orders = [], []
-        for order in orders:
-            if order['ship-country'] in self.eu_countries:
-                eu_orders.append(order)
-            else:
-                non_eu_orders.append(order)
-        return eu_orders, non_eu_orders
 
 
 if __name__ == "__main__":

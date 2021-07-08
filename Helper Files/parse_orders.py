@@ -33,7 +33,6 @@ class ParseOrders():
         self.all_orders = all_orders
         self.amzn_channel = amzn_channel
         self.db_client = db_client
-        self.de_orders = []
         self.eu_orders = []
         self.non_eu_orders = []
     
@@ -44,34 +43,15 @@ class ParseOrders():
         self.report_path = os.path.join(output_dir, f'Amazon{self.amzn_channel} Report {date_stamp}.xlsx')
     
     def split_orders_by_region(self):
-        '''based on amazon sales channel performs different regional sorting to class variables - lists. For Amazon EU:
-        splits all_orders into three lists: EU (VAT (item-tax) > 0) and NON-EU (VAT = 0)
-        for Amazon COM:
-        splits all_orders into two lists: EU/NON-EU based on shipping-country compared to EU countries list'''
+        '''Sorts all orders into eu/non_eu regions
+        Greatly simplified regional sorting since AMZN EU VAT separation in 2021-07'''
         self.eu_countries = self._get_EU_countries_list_from_file()
         for order in self.all_orders:
             try:
-                if self.amzn_channel == 'COM':
-                    # AMAZON COM regional sorting
-                    if order['ship-country'] in self.eu_countries:
-                        self.eu_orders.append(order)
-                    else:
-                        self.non_eu_orders.append(order)
+                if order['ship-country'] in self.eu_countries:
+                    self.eu_orders.append(order)
                 else:
-                    # AMAZON EU regional sorting
-                    # forcing UK orders in NON-EU group, independent from item-tax value (brexit update; also in __split_by_region in OrdersReport):
-                    if order['ship-country'] == 'GB':
-                        self.non_eu_orders.append(order)
-                        continue
-
-                    if order['ship-country'] == 'DE':
-                        self.de_orders.append(order)
-                        continue
-
-                    if float(order['item-tax']) > 0:
-                        self.eu_orders.append(order)
-                    else:
-                        self.non_eu_orders.append(order)
+                    self.non_eu_orders.append(order)
             except KeyError:
                 logging.exception(f'Could not find item-tax in order keys. Order: {order}\nClosing connection to database, alerting VBA, exiting...')
                 self.db_client.close_connection()
@@ -92,14 +72,14 @@ class ParseOrders():
 
     def exit_no_new_orders(self):
         '''terminate if all lists after sorting are empty'''
-        if not self.eu_orders and not self.non_eu_orders and not self.de_orders:
+        if not self.eu_orders and not self.non_eu_orders:
             logging.info(f'No new orders found. Terminating, closing database connection, alerting VBA.')
             self.db_client.close_connection()
             print(VBA_NO_NEW_JOB)
             sys.exit()
 
     def prepare_export_obj(self):
-        '''based on self.amzn_channel constructs a dict data object for OrdersReport class. Output format:
+        '''Constructs a dict data object for OrdersReport class. Output format:
         export_data = {
                 eu_orders: {
                             currency1: [order1, order2, order...],
@@ -110,21 +90,10 @@ class ParseOrders():
                             currency1: [order1, order2, order...],
                             currency2: [order1, order2, order...],
                             currency_n : [order1, order2, order...]
-                                }
-                # only for Amazon EU:
-                de_orders: {
-                            currency1: [order1, order2, order...],
-                            currency2: [order1, order2, order...],
-                            currency_n : [order1, order2, order...]
-                                }                
-                    }'''
+                                }'''
         eu_currency_grouped = self.get_region_currency_based_dict(self.eu_orders)
         non_eu_currency_grouped = self.get_region_currency_based_dict(self.non_eu_orders)
-        de_currency_grouped = self.get_region_currency_based_dict(self.de_orders)
-        if self.amzn_channel == 'EU':
-            self.export_obj = {'EU' : eu_currency_grouped, 'NON-EU' : non_eu_currency_grouped, 'DE' : de_currency_grouped}
-        elif self.amzn_channel == 'COM':
-            self.export_obj = {'EU' : eu_currency_grouped, 'NON-EU' : non_eu_currency_grouped}
+        self.export_obj = {'EU' : eu_currency_grouped, 'NON-EU' : non_eu_currency_grouped}
         logging.debug(f'Returning export object with keys: {self.export_obj.keys()}')
         return self.export_obj
 
@@ -142,7 +111,7 @@ class ParseOrders():
         try:
             if self.amzn_channel == 'EU':
                 logging.info(f'Passing orders to create report with {AmazonEUOrdersReport.__name__} class')
-                AmazonEUOrdersReport(self.export_obj).export(self.report_path)
+                AmazonEUOrdersReport(self.export_obj, self.eu_countries).export(self.report_path)
             elif self.amzn_channel == 'COM':
                 logging.info(f'Passing orders to create report with {AmazonCOMOrdersReport.__name__} class')
                 AmazonCOMOrdersReport(self.export_obj, self.eu_countries).export(self.report_path)
