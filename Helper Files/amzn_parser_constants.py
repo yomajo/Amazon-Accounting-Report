@@ -17,16 +17,11 @@ EU_SUMMARY_HEADERS = ['Currency',
                 '  Date ',
                 '  Total',
                 'Total #',
-                'VAT   ',
-                '  #',
                 'NON-VAT',
                 '  #',
                 '',
-                'DE    ',
-                '  #',
-                'DE Taxes',
-                 '',
-                'UK TAXES']
+                'UK TAXES',
+                '',]
 
 
 COM_SUMMARY_HEADERS = ['Currency',

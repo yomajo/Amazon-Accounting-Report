@@ -1,23 +1,46 @@
 INFO:root:
- NEW RUN STARTING: 2021.04.25 16:57
-INFO:root:Accepted sys args on launch: txt_path: C:\Coding\Ebay\Working\Backups\Amazon exports\Collected exports\export 2021.02.08.txt, amzn_channel: EU
+ NEW RUN STARTING: 2021.07.08 17:25
+INFO:root:Accepted sys args on launch: txt_path: C:\Coding\Ebay\Working\Backups\Amazon exports\Collected exports\export 2021.04.29 EU.txt, amzn_channel: EU
 INFO:root:file exists, continuing to processing...
-INFO:root:Filter date used in program: 2021-04-25 00:00:00. Passing to vba and logging strftime format: 2021-04-25
-INFO:root:Orders passed today date filtering: 560/560
-INFO:root:Returning 560/560 new/loaded orders for further processing
-INFO:root:After checking with database, further processing: 560 new orders
+INFO:root:Filter date used in program: 2021-07-08 00:00:00. Passing to vba and logging strftime format: 2021-07-08
+INFO:root:Orders passed today date filtering: 346/346
+INFO:root:Returning 346/346 new/loaded orders for further processing
+INFO:root:After checking with database, further processing: 346 new orders
 INFO:root:Passing orders to create report with AmazonEUOrdersReport class
-INFO:root:XLSX report AmazonEU Report 2021.04.25 16.57.xlsx successfully created.
-INFO:root:New database backup amzn_accounting_b4lrun.db created on: 2021-04-25 16:57 location: C:\Coding\Ebay\Country based sorting\Amazon Accounting Report\Helper Files\amzn_accounting_b4lrun.db
+INFO:root:XLSX report AmazonEU Report 2021.07.08 17.25.xlsx successfully created.
+INFO:root:New database backup amzn_accounting_b4lrun.db created on: 2021-07-08 17:25 location: C:\Coding\Ebay\Country based sorting\Amazon Accounting Report\Helper Files\amzn_accounting_b4lrun.db
 INFO:root:Created backup amzn_accounting_b4lrun.db before adding orders
 INFO:root:Current program_runs id: 1
-INFO:root:560 new orders were successfully added to database at run: 1
+INFO:root:346 new orders were successfully added to database at run: 1
 INFO:root:Deleted old orders (cascade) from orders table where run_id = []
-INFO:root:New database backup amzn_accounting_lrun.db created on: 2021-04-25 16:57 location: C:\Coding\Ebay\Country based sorting\Amazon Accounting Report\Helper Files\amzn_accounting_lrun.db
+INFO:root:New database backup amzn_accounting_lrun.db created on: 2021-07-08 17:25 location: C:\Coding\Ebay\Country based sorting\Amazon Accounting Report\Helper Files\amzn_accounting_lrun.db
 INFO:root:Created backup amzn_accounting_lrun.db after adding orders
-INFO:root:Connection to DB in session with file export 2021.02.08.txt closed
-INFO:root:Total of 560 new orders have been added to database, after exports were completed
-INFO:root:Connection to DB in session with file export 2021.02.08.txt closed
+INFO:root:Connection to DB in session with file export 2021.04.29 EU.txt closed
+INFO:root:Total of 346 new orders have been added to database, after exports were completed
+INFO:root:Connection to DB in session with file export 2021.04.29 EU.txt closed
 INFO:root:
-RUN ENDED: 2021.04.25 16:57
+RUN ENDED: 2021.07.08 17:25
+
+INFO:root:
+ NEW RUN STARTING: 2021.07.08 17:25
+INFO:root:Accepted sys args on launch: txt_path: C:\Coding\Ebay\Working\Backups\Amazon exports\Collected exports\export COM 2021.06.28 - MXN new curency.txt, amzn_channel: COM
+INFO:root:file exists, continuing to processing...
+INFO:root:Filter date used in program: 2021-07-08 00:00:00. Passing to vba and logging strftime format: 2021-07-08
+INFO:root:Orders passed today date filtering: 81/81
+INFO:root:Returning 81/81 new/loaded orders for further processing
+INFO:root:After checking with database, further processing: 81 new orders
+INFO:root:Passing orders to create report with AmazonCOMOrdersReport class
+INFO:root:XLSX report AmazonCOM Report 2021.07.08 17.25.xlsx successfully created.
+INFO:root:New database backup amzn_accounting_b4lrun.db created on: 2021-07-08 17:25 location: C:\Coding\Ebay\Country based sorting\Amazon Accounting Report\Helper Files\amzn_accounting_b4lrun.db
+INFO:root:Created backup amzn_accounting_b4lrun.db before adding orders
+INFO:root:Current program_runs id: 2
+INFO:root:81 new orders were successfully added to database at run: 2
+INFO:root:Deleted old orders (cascade) from orders table where run_id = []
+INFO:root:New database backup amzn_accounting_lrun.db created on: 2021-07-08 17:25 location: C:\Coding\Ebay\Country based sorting\Amazon Accounting Report\Helper Files\amzn_accounting_lrun.db
+INFO:root:Created backup amzn_accounting_lrun.db after adding orders
+INFO:root:Connection to DB in session with file export COM 2021.06.28 - MXN new curency.txt closed
+INFO:root:Total of 81 new orders have been added to database, after exports were completed
+INFO:root:Connection to DB in session with file export COM 2021.06.28 - MXN new curency.txt closed
+INFO:root:
+RUN ENDED: 2021.07.08 17:25
 
