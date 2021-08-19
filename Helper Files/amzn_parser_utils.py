@@ -131,5 +131,10 @@ def get_EU_countries_from_txt(txt_abspath:str) -> list:
         print(VBA_ERROR_ALERT)
         sys.exit()
 
+def get_order_tax(order:dict) -> float:
+    '''returns tax of order dict as float'''
+    tax = float(order['item-tax'])
+    return round(tax, 2)
+
 if __name__ == "__main__":
     pass
