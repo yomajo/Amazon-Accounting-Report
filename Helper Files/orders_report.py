@@ -3,7 +3,6 @@ from amzn_parser_utils import simplify_date, col_to_letter, get_last_used_row_co
 from collections import defaultdict
 import openpyxl
 import copy
-import os
 
 # GLOBAL VARIABLES
 SUMMARY_SHEET_NAME = 'Summary'
@@ -15,20 +14,11 @@ REPORT_START_ROW = 1
 REPORT_START_COL = 1
 
 
-class AmazonEUOrdersReport():
-    '''Indended for use of orders sold through Amazon EU sales channel
-    accepts export data dictionary and output file path as arguments, creates individual
-    sheets for region & currency based order segregation, creates formatted xlsx report file.
-    Error handling is present outside of this class.
 
-    Expected input obj format: 
-        {eu_orders: {currency1: [order1, order2, order...], currency2: [order1, order2, order...], ...},
-        non_eu_orders: {currency1: [order1, order2, order...], currency2: [order1, order2, order...] ...}}
-    
-    eu_countries: list of eu member countries as ['EE', 'LV', 'LT', 'FI', ...]
-    
-    Main method: export() - creates individual sheets, pushes selected data from corresponding orders;
-    creates summary sheet, calculates regional / currency based totals'''
+
+class AmazonOrdersReport():
+    '''Generic report class for both EU and COM reports
+    Used to be AmazonEUOrdersReport. Since 2021-08 for easier differentiation separated to generic + inheritance for both report classes'''
     
     def __init__(self, export_obj:dict, eu_countries:list):
         self.export_obj = self._clean_incoming_data(export_obj)
@@ -338,9 +328,41 @@ class AmazonEUOrdersReport():
         self.wb.close()
 
 
-class AmazonCOMOrdersReport(AmazonEUOrdersReport):
+class AmazonEUOrdersReport(AmazonOrdersReport):
+    '''Indended for use of orders sold through Amazon EU sales channel
+    accepts export data dictionary and output file path as arguments, creates individual
+    sheets for region & currency based order segregation, creates formatted xlsx report file.
+    Error handling is present outside of this class.
+
+    Expected input obj format: 
+        {eu_orders: {currency1: [order1, order2, order...], currency2: [order1, order2, order...], ...},
+        non_eu_orders: {currency1: [order1, order2, order...], currency2: [order1, order2, order...] ...}}
+    
+    eu_countries: list of eu member countries as ['EE', 'LV', 'LT', 'FI', ...]
+    
+    Main method: export() - creates individual sheets, pushes selected data from corresponding orders;
+    creates summary sheet, calculates regional / currency based totals'''
+
+    def _split_by_region(self, orders:list):
+        '''splits provided list of orders into two lists based on order['ship-country'] EU membership:
+        1. eu orders
+        2. non-eu orders
+        Specific to AMAZON EU report: orders with tax = 0 are attributed to '''    
+        eu_orders, non_eu_orders = [], []
+        for order in orders:
+            if order['ship-country'] in self.eu_countries:
+                if order['item-tax'] == 0:
+                    non_eu_orders.append(order)
+                else:
+                    eu_orders.append(order)
+            else:
+                non_eu_orders.append(order)
+        return eu_orders, non_eu_orders
+
+
+class AmazonCOMOrdersReport(AmazonOrdersReport):
     '''Intended for use of orders sold through Amazon COM sales channel. Simplified report version
-    based on (inherited from) AmazonEUOrdersReport class
+    based on (inherited from) AmazonOrdersReport class
     
     accepts export data dictionary and output file path as arguments, creates individual
     sheets for region & currency based order segregation, creates formatted xlsx report file.
