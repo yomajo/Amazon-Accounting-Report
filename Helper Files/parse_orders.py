@@ -1,4 +1,4 @@
-from amzn_parser_utils import get_output_dir, get_EU_countries_from_txt
+from amzn_parser_utils import get_output_dir, get_EU_countries_from_txt, get_order_tax
 from orders_report import AmazonEUOrdersReport, AmazonCOMOrdersReport
 from collections import defaultdict
 from datetime import datetime
@@ -43,13 +43,16 @@ class ParseOrders():
         self.report_path = os.path.join(output_dir, f'Amazon{self.amzn_channel} Report {date_stamp}.xlsx')
     
     def split_orders_by_region(self):
-        '''Sorts all orders into eu/non_eu regions
-        Greatly simplified regional sorting since AMZN EU VAT separation in 2021-07'''
+        '''Sorts all orders into eu/non_eu regions based on sales channel'''
         self.eu_countries = self._get_EU_countries_list_from_file()
         for order in self.all_orders:
             try:
                 if order['ship-country'] in self.eu_countries:
-                    self.eu_orders.append(order)
+                    # Add EU orders with tax = 0 to non-vat (non-eu)
+                    if self.amzn_channel == 'EU' and get_order_tax(order) == 0:
+                        self.non_eu_orders.append(order)
+                    else:
+                        self.eu_orders.append(order)
                 else:
                     self.non_eu_orders.append(order)
             except KeyError:
@@ -132,7 +135,7 @@ class ParseOrders():
         self._prepare_filepaths()
         self.split_orders_by_region()
         self.exit_no_new_orders()
-        self.prepare_export_obj()        
+        self.prepare_export_obj()
         if testing:
             logging.info(f'Running in testing {testing} environment. Change behaviour in export_orders method in ParseOrders class')
             print(f'Running in testing {testing} environment. Change behaviour in export_orders method in ParseOrders class')
