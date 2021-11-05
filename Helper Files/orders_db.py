@@ -7,7 +7,7 @@ import os
 
 
 # GLOBAL VARIABLES
-ORDERS_ARCHIVE_DAYS = 30
+ORDERS_ARCHIVE_DAYS = 90
 DATABASE_PATH = 'amzn_accounting.db'
 BACKUP_DB_BEFORE_NAME = 'amzn_accounting_b4lrun.db'
 BACKUP_DB_AFTER_NAME = 'amzn_accounting_lrun.db'
