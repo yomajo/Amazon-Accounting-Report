@@ -1,19 +1,15 @@
-from amzn_parser_utils import get_output_dir, get_EU_countries_from_txt, get_order_tax
-from orders_report import AmazonEUOrdersReport, AmazonCOMOrdersReport
-from collections import defaultdict
-from datetime import datetime
 import logging
 import sys
-import csv
 import os
+from datetime import datetime
+from utils import get_output_dir, get_EU_countries_from_txt, get_order_tax
+from orders_report import AmazonEUOrdersReport, AmazonCOMOrdersReport
+from collections import defaultdict
+from constants import VBA_ERROR_ALERT, VBA_KEYERROR_ALERT, VBA_NO_NEW_JOB
 
 
 # GLOBAL VARIABLES
-VBA_ERROR_ALERT = 'ERROR_CALL_DADDY'
-VBA_NO_NEW_JOB = 'NO NEW JOB'
-VBA_KEYERROR_ALERT = 'ERROR_IN_SOURCE_HEADERS'
 EU_COUNTRIES_TXT = 'EU Countries.txt'
-DPOST_REF_CHARLIMIT_PER_CELL = 28
 
 
 class ParseOrders():
@@ -141,7 +137,7 @@ class ParseOrders():
             print(f'Running in testing {testing} environment. Change behaviour in export_orders method in ParseOrders class')
             print('ENABLED REPORT EXPORT WHILE TESTING')            
             self.export_report()
-            # self.push_orders_to_db()
+            self.push_orders_to_db()
             return
         self.export_report()
         self.push_orders_to_db()
