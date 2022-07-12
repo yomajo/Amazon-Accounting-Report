@@ -24,24 +24,6 @@ def get_output_dir(client_file=True):
         curr_folder = os.path.dirname(os.path.abspath(__file__))
     return get_level_up_abspath(curr_folder) if client_file else curr_folder
 
-def file_to_binary(abs_fpath:str):
-    '''returns binary data for file'''
-    try:
-        with open(abs_fpath, 'rb') as f:
-            bfile = f.read()
-        return bfile
-    except FileNotFoundError as e:
-        print(f'file_to_binary func got arg: {abs_fpath}; resulting in error: {e}')
-        return None
-
-def recreate_txt_file(abs_fpath:str, binary_data):
-    '''outputs a file from given binary data'''
-    try:
-        with open(abs_fpath, 'wb') as f:
-            f.write(binary_data)
-    except TypeError:
-        print(f'Expected binary when writing contents to file {abs_fpath}')
-
 def is_windows_machine() -> bool:
     '''returns True if machine executing the code is Windows based'''
     machine_os = platform.system()
@@ -68,7 +50,7 @@ def get_datetime_obj(date_str: str, sales_channel: str):
         if sales_channel == 'Amazon Warehouse':
             return datetime.strptime(date_str, '%Y.%m.%d  %H:%M:%S')
         else:
-            # Amazon COM / EU
+            # AmazonCOM / AmazonEU
             return datetime.fromisoformat(date_str).replace(tzinfo=None)
     except ValueError:
         logging.critical(f'Change in date format at sales channel: {sales_channel}! Could not parse to datetime: {date_str}. Terminating...')
@@ -136,11 +118,11 @@ def get_EU_countries_from_txt(txt_abspath:str) -> list:
     except Exception as e:
         logging.critical(f'Error reading EU countries from txt file: {txt_abspath}. Err: {e}. Alerting VBA, terminating immediately.')
         print(VBA_ERROR_ALERT)
-        sys.exit()
+        exit()
 
-def get_order_tax(order:dict) -> float:
+def get_order_tax(order: dict, proxy_keys: dict) -> float:
     '''returns tax of order dict as float'''
-    tax = float(order['item-tax'])
+    tax = float(order[proxy_keys['item-tax']])
     return round(tax, 2)
 
 def get_file_encoding_delimiter(fpath:str) -> tuple:

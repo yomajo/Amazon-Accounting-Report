@@ -4,24 +4,23 @@ import csv
 import os
 from datetime import datetime
 import sqlalchemy.sql.default_comparator    #neccessary for executable packing
-
 from utils import get_output_dir, get_datetime_obj, alert_vba_date_count
 from utils import get_file_encoding_delimiter, delete_file, dump_to_json
 from parse_orders import ParseOrders
-from orders_db import OrdersDB, SQLAlchemyOrdersDB
+from orders_db import SQLAlchemyOrdersDB
 from constants import SALES_CHANNEL_PROXY_KEYS, VBA_ERROR_ALERT, VBA_KEYERROR_ALERT, VBA_OK
 
 
 TEST_CASES = [
-    {'channel': 'EU', 'file': r'C:\Coding\Ebay\Working\Backups\Amazon exports\EU 2022.07.07-15.txt'},
-    {'channel': 'COM', 'file': r'C:\Coding\Ebay\Working\Backups\Amazon exports\COM 2022.03.10.txt'},
+    {'channel': 'AmazonEU', 'file': r'C:\Coding\Ebay\Working\Backups\Amazon exports\EU 2022.07.07-15.txt'},
+    {'channel': 'AmazonCOM', 'file': r'C:\Coding\Ebay\Working\Backups\Amazon exports\COM 2022.03.10.txt'},
     {'channel': 'Amazon Warehouse', 'file': r'C:\Coding\Ebay\Working\Backups\Amazon warehouse csv\warehouse2.csv'},
     ]
 
 # GLOBAL VARIABLES
 TESTING = True
 TEST_CASE = TEST_CASES[0]
-TEST_TODAY_DATE = datetime.now().strftime('%Y-%m-%d')   #'2021-08-19' or change to format
+TEST_TODAY_DATE = datetime.now().strftime('%Y-%m-%d')   # Hardcode in format: '2021-08-19' if needed when testing
 
 SALES_CHANNEL = TEST_CASE['channel']
 ORDERS_SOURCE_FILE = TEST_CASE['file']
@@ -72,10 +71,14 @@ def remove_todays_orders(orders: list, sales_channel: str, proxy_keys: dict) -> 
         alert_vba_date_count(today_str, not_processing_count)
         logging.info(f'Orders passed today date filtering: {len(orders_until_today)}/{len(orders)}')
         return orders_until_today
+    except KeyError as e:
+        logging.critical(f'Err: {e} in remove_todays_orders method. Probable key not found: payments-date, (sales channel: {sales_channel})')
+        print(VBA_KEYERROR_ALERT)
+        exit()
     except Exception as e:
         logging.critical(f'Unknown error: {e} while filtering out todays orders. Date used: {today_date}; sales_channel: {sales_channel}')
         print(VBA_ERROR_ALERT)
-        sys.exit()
+        exit()
 
 def get_today_obj():
     '''returns instance of datetime library corresponding to date (no time) for today used in rest of program'''
@@ -101,7 +104,7 @@ def parse_args():
     except Exception as e:
         print(VBA_ERROR_ALERT)
         logging.critical(f'Error parsing arguments on script initialization in cmd. Arguments provided: {list(sys.argv)} Number Expected: {EXPECTED_SYS_ARGS}. Err: {e}')
-        sys.exit()
+        exit()
 
 def main():
     '''Main function executing parsing of provided txt file and outputing csv, xlsx files'''    

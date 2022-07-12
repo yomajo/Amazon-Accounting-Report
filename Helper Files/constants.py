@@ -61,7 +61,7 @@ AMAZON_WAREHOUSE_KEYS = {
     'sales-channel' : 'Sales Channel',
 }
 
-SALES_CHANNEL_PROXY_KEYS = {'COM': AMAZON_KEYS, 'EU': AMAZON_KEYS, 'Amazon Warehouse': AMAZON_WAREHOUSE_KEYS,}
+SALES_CHANNEL_PROXY_KEYS = {'AmazonCOM': AMAZON_KEYS, 'AmazonEU': AMAZON_KEYS, 'Amazon Warehouse': AMAZON_WAREHOUSE_KEYS,}
 
 TEMPLATE_SHEET_MAPPING= {
         'Order ID' : 'order-id',

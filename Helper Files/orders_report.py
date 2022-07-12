@@ -1,8 +1,9 @@
-from amzn_parser_constants import TEMPLATE_SHEET_MAPPING, EU_SUMMARY_HEADERS, COM_SUMMARY_HEADERS
-from amzn_parser_utils import simplify_date, col_to_letter, get_last_used_row_col
+import copy
 from collections import defaultdict
 import openpyxl
-import copy
+from constants import TEMPLATE_SHEET_MAPPING, EU_SUMMARY_HEADERS, COM_SUMMARY_HEADERS
+from utils import simplify_date, col_to_letter, get_last_used_row_col
+
 
 # GLOBAL VARIABLES
 SUMMARY_SHEET_NAME = 'Summary'
@@ -14,15 +15,15 @@ REPORT_START_ROW = 1
 REPORT_START_COL = 1
 
 
-
-
 class AmazonOrdersReport():
     '''Generic report class for both EU and COM reports
     Used to be AmazonEUOrdersReport. Since 2021-08 for easier differentiation separated to generic + inheritance for both report classes'''
     
-    def __init__(self, export_obj:dict, eu_countries:list):
+    def __init__(self, export_obj: dict, eu_countries: list, sales_channel, proxy_keys):
         self.export_obj = self._clean_incoming_data(export_obj)
         self.eu_countries = eu_countries
+        self.sales_channel = sales_channel
+        self.proxy_keys = proxy_keys
         self._get_report_objs()
 
     def _clean_incoming_data(self, export_obj:dict) -> dict:
@@ -38,22 +39,21 @@ class AmazonOrdersReport():
             for currency in export_obj[region]:
                 yield region, currency    
     
-    @staticmethod
-    def _correct_orders_numbers_dates(orders:list) -> list:
+    def _correct_orders_numbers_dates(self, orders: list) -> list:
         '''date and numbers data cleaning for report:
         - original date format (2020-04-16T10:07:16+00:00) simplified to YYYY-MM-DD
         - all numbers of interest converted to floats'''
         for order in orders:
             # Simplifying order dates:
-            order['purchase-date'] = simplify_date(order['purchase-date'])
-            order['payments-date'] = simplify_date(order['payments-date'])
+            order[self.proxy_keys['purchase-date']] = simplify_date(order[self.proxy_keys['purchase-date']])
+            order[self.proxy_keys['payments-date']] = simplify_date(order[self.proxy_keys['payments-date']])
             # Converting numbers stored as strings to floats:
-            order['item-price'] = float(order['item-price'])
-            order['item-tax'] = float(order['item-tax'])
-            order['shipping-price'] = float(order['shipping-price'])
-            order['shipping-tax'] = float(order['shipping-tax'])
+            order[self.proxy_keys['item-price']] = float(order[self.proxy_keys['item-price']])
+            order[self.proxy_keys['item-tax']] = float(order[self.proxy_keys['item-tax']])
+            order[self.proxy_keys['shipping-price']] = float(order[self.proxy_keys['shipping-price']])
+            order[self.proxy_keys['shipping-tax']] = float(order[self.proxy_keys['shipping-tax']])
         return orders
-    
+
     def _get_report_objs(self):
         '''prepares cls variables for excel report workbook filling'''
         self.segments_orders_obj = self._get_segments_orders_obj(self.export_obj)
@@ -61,14 +61,14 @@ class AmazonOrdersReport():
         self.summary_taxes_obj = self._get_summary_taxes_obj()
 
     def _get_segments_orders_obj(self, export_obj:dict) -> dict:
-        '''returns dict of dicts for each segment (sheets) and corresponding list of orders
+        '''returns dict of dicts for each segment (sheets) and corresponding list of orders (written to separate sheets)
         returned object: {'EU EUR' : [order1, order2, ...], 'NON-EU GBP' : [order11, order 22...], ...}'''
         segments_orders = {}
         for region, currency in self._unpack_export_obj(export_obj):
             segments_orders[f'{region} {currency}'] = export_obj[region][currency]
         return segments_orders
 
-    def _get_summary_table_obj(self, export_obj:dict) -> dict:
+    def _get_summary_table_obj(self, export_obj: dict) -> dict:
         '''Returns nested object based on 1. currency 2. order dates. Example:
         {'EUR':{'date1':[order1, order2...], 'date2':[order3, order4...], ...},
         'GBP':{'date1':[order1, order2...], 'date2':[order1, order2...], ...}, ...}
@@ -84,15 +84,16 @@ class AmazonOrdersReport():
             summary_table_obj[currency] = self._get_payment_date_obj(currency_based[currency])
         return summary_table_obj
 
-    @staticmethod
-    def _get_payment_date_obj(orders:list) -> dict:
+    def _get_payment_date_obj(self, orders: list) -> dict:
         '''forms a dictionary based on dates in list of order dicts. Returns payment dates as keys and orders list as values.
         Output format: {{'YYYY-MM-D1':[order1, order2, ...]},
                         {'YYYY-MM-D2':[order1, order2, ...]}, ...}'''
         payment_date_orders = defaultdict(list)
         for order in orders:
-            payment_date_orders[order['payments-date']].append(order)
+            payment_date_orders[order[self.proxy_keys['payments-date']]].append(order)
         return payment_date_orders
+    
+    # ------------------ REVIEWED ABOVE ------------------------
 
     def _get_summary_taxes_obj(self):
         '''Returns currency and date based calculated taxes for UK orders (item-tax + shipping)
