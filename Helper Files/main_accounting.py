@@ -18,8 +18,9 @@ TEST_CASES = [
     ]
 
 # GLOBAL VARIABLES
-TESTING = True
-TEST_CASE = TEST_CASES[0]
+TESTING = False
+TEST_CASE = TEST_CASES[2]
+# TEST_TODAY_DATE = '2022-06-27'
 TEST_TODAY_DATE = datetime.now().strftime('%Y-%m-%d')   # Hardcode in format: '2021-08-19' if needed when testing
 
 SALES_CHANNEL = TEST_CASE['channel']
@@ -85,7 +86,7 @@ def get_today_obj():
     if TESTING:
         return datetime.strptime(TEST_TODAY_DATE, '%Y-%m-%d') 
     else:
-        return datetime.today().date()
+        return datetime.today()
 
 def parse_args():
     '''returns source_fpath, sales_channel from cli args or hardcoded testing variables'''    

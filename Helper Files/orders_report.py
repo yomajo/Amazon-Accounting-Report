@@ -19,11 +19,11 @@ class AmazonOrdersReport():
     '''Generic report class for both EU and COM reports
     Used to be AmazonEUOrdersReport. Since 2021-08 for easier differentiation separated to generic + inheritance for both report classes'''
     
-    def __init__(self, export_obj: dict, eu_countries: list, sales_channel, proxy_keys):
-        self.export_obj = self._clean_incoming_data(export_obj)
+    def __init__(self, export_obj: dict, eu_countries: list, sales_channel: str, proxy_keys: dict):
         self.eu_countries = eu_countries
         self.sales_channel = sales_channel
         self.proxy_keys = proxy_keys
+        self.export_obj = self._clean_incoming_data(export_obj)
         self._get_report_objs()
 
     def _clean_incoming_data(self, export_obj:dict) -> dict:
@@ -45,8 +45,8 @@ class AmazonOrdersReport():
         - all numbers of interest converted to floats'''
         for order in orders:
             # Simplifying order dates:
-            order[self.proxy_keys['purchase-date']] = simplify_date(order[self.proxy_keys['purchase-date']])
-            order[self.proxy_keys['payments-date']] = simplify_date(order[self.proxy_keys['payments-date']])
+            order[self.proxy_keys['purchase-date']] = simplify_date(order[self.proxy_keys['purchase-date']], self.sales_channel)
+            order[self.proxy_keys['payments-date']] = simplify_date(order[self.proxy_keys['payments-date']], self.sales_channel)
             # Converting numbers stored as strings to floats:
             order[self.proxy_keys['item-price']] = float(order[self.proxy_keys['item-price']])
             order[self.proxy_keys['item-tax']] = float(order[self.proxy_keys['item-tax']])
@@ -92,8 +92,6 @@ class AmazonOrdersReport():
         for order in orders:
             payment_date_orders[order[self.proxy_keys['payments-date']]].append(order)
         return payment_date_orders
-    
-    # ------------------ REVIEWED ABOVE ------------------------
 
     def _get_summary_taxes_obj(self):
         '''Returns currency and date based calculated taxes for UK orders (item-tax + shipping)
@@ -115,13 +113,13 @@ class AmazonOrdersReport():
         '''returns sum of (item-tax + shipping-tax) for each order inside list if order[ship-country] = country_code'''
         taxes = 0
         for order in orders:
-            if order['ship-country'] == country_code:
-                taxes += order['item-tax']
-                taxes += order['shipping-tax']
+            if order[self.proxy_keys['ship-country']] == country_code:
+                taxes += order[self.proxy_keys['item-tax']]
+                taxes += order[self.proxy_keys['shipping-tax']]
         return round(taxes, 2)
 
 
-    def _data_to_sheet(self, ws_name:str, orders_data:list):
+    def _data_to_sheet(self, ws_name: str, orders_data: list):
         '''creates new ws_name sheet and fills it with orders_data argument data'''
         self._create_sheet(ws_name)
         active_ws = self.wb[ws_name]
@@ -129,7 +127,7 @@ class AmazonOrdersReport():
         self._fill_sheet(active_ws, orders_data)
         self._adjust_col_widths(active_ws, self.col_widths)
 
-    def _create_sheet(self, ws_name:str):
+    def _create_sheet(self, ws_name: str):
         '''creates new sheet obj with name ws_name'''
         self.wb.create_sheet(title=ws_name)
         self.col_widths = {}
@@ -139,13 +137,13 @@ class AmazonOrdersReport():
         self._write_headers(active_ws)
         self._write_sheet_orders(active_ws, orders_data)
 
-    def _write_headers(self, ws:object):
+    def _write_headers(self, ws: object):
         '''writes header row to segment sheet'''
         for col, header in enumerate(SHEET_HEADERS):
             self._update_col_widths(col, header)
             ws.cell(1, col + 1).value = header
 
-    def _update_col_widths(self, col:int, cell_value:str, zero_indexed=True):
+    def _update_col_widths(self, col: int, cell_value: str, zero_indexed=True):
         '''runs on each cell. Forms a dictionary {'A':30, 'B':15...} for max column widths in worksheet (width as length of max cell)'''
         col_letter = col_to_letter(col, zero_indexed=zero_indexed)
         if col_letter in self.col_widths:
@@ -155,14 +153,18 @@ class AmazonOrdersReport():
         else:
             self.col_widths[col_letter] = len(cell_value)
 
-    def _write_sheet_orders(self, ws, orders_data:list):
+    def _write_sheet_orders(self, ws, orders_data: list):
         '''writes orders_data to segment sheet'''
         for row, col in self.range_generator(orders_data, SHEET_HEADERS):
             order_dict = orders_data[row]
-            key_pointer = TEMPLATE_SHEET_MAPPING[SHEET_HEADERS[col]]
-            self._update_col_widths(col, str(order_dict[key_pointer]))
+
+            proxy_key = TEMPLATE_SHEET_MAPPING[SHEET_HEADERS[col]]
+            # proxy value = order key
+            proxy_value = self.proxy_keys[proxy_key]
+
+            self._update_col_widths(col, str(order_dict[proxy_value]))
             # offsets due to excel vs python numbering  + headers in row 1
-            ws.cell(row + 2, col + 1).value = order_dict[key_pointer]
+            ws.cell(row + 2, col + 1).value = order_dict[proxy_value]
 
     @staticmethod
     def range_generator(orders_data, headers):
@@ -170,7 +172,7 @@ class AmazonOrdersReport():
             for col, _ in enumerate(headers):
                 yield row, col
 
-    def _adjust_col_widths(self, ws, col_widths:dict, summary=False):
+    def _adjust_col_widths(self, ws, col_widths: dict, summary=False):
         '''iterates over {'A':30, 'B':40, 'C':35...} dict to resize worksheets' column widths. Summary ws wider columns with summary=True'''
         factor = 1.3 if summary else 1.05
         for col_letter in col_widths:
@@ -221,18 +223,19 @@ class AmazonOrdersReport():
             self.s_ws.cell(row, col).fill = BACKGROUND_COLOR_STYLE
     
     @staticmethod
-    def _header_cells_generator(max_col:int):
+    def _header_cells_generator(max_col: int):
         '''generator for daily breakdown headers coloring, yields row, col'''
         for row in [REPORT_START_ROW, REPORT_START_ROW + 1]:
             for col in range(REPORT_START_COL, max_col):
                 yield row, col
 
-    def _apply_horizontal_line(self, row:int):
+    def _apply_horizontal_line(self, row: int):
         '''adds horizonal line through 100 cols (c=1 case) in summary sheet at argument row top'''
         for col in range(REPORT_START_COL, REPORT_START_COL + 99):
             self.s_ws.cell(row, col).border = openpyxl.styles.Border(top=THIN_BORDER)
     
-    def _fill_format_date_data(self, date_orders:list):
+
+    def _fill_format_date_data(self, date_orders: list):
         '''calculates neccessary data and fills, formats data in summary sheet in single row'''
         # Data does not update column widths, only headers. If data formats, scope were to change, function shall be updated 
         self.s_ws.cell(self.row_cursor, REPORT_START_COL + 2).value = self._get_segment_total(date_orders)
@@ -247,27 +250,26 @@ class AmazonOrdersReport():
         self.s_ws.cell(self.row_cursor, REPORT_START_COL + 5).value = len(non_eu_orders)
         self._fill_summary_country_columns(eu_orders)
 
-    def _split_by_region(self, orders:list):
-        '''splits provided list of orders into two lists based on order['ship-country'] EU membership:
+    def _split_by_region(self, orders: list):
+        '''splits provided list of orders into two lists based on order['ship-country'] (using proxy keys) EU membership:
         1. eu orders
         2. non-eu orders'''    
         eu_orders, non_eu_orders = [], []
         for order in orders:
-            if order['ship-country'] in self.eu_countries:
+            if order[self.proxy_keys['ship-country']] in self.eu_countries:
                 eu_orders.append(order)
             else:
                 non_eu_orders.append(order)
         return eu_orders, non_eu_orders
 
-    @staticmethod
-    def _get_segment_total(orders:list) -> float:
+    def _get_segment_total(self, orders: list) -> float:
         '''Returns a sum of all orders' item-price + shipping-price in list of order dicts'''
         total = 0
         for order in orders:
-            total += order['item-price'] + order['shipping-price']
+            total += order[self.proxy_keys['item-price']] + order[self.proxy_keys['shipping-price']]
         return round(total, 2)
 
-    def _fill_summary_country_columns(self, eu_orders:list):
+    def _fill_summary_country_columns(self, eu_orders: list):
         '''fills individual eu countries data to separate columns'''
         countries_orders = self._get_country_based_dict(eu_orders)
         # Iterate countries, identify target/new column
@@ -283,16 +285,16 @@ class AmazonOrdersReport():
             # Add corresponding data in added/existing ref_col
             self._enter_format_country_date_data(country_orders, country, ref_col)
 
-    def _get_country_based_dict(self, orders:list) -> dict:
+    def _get_country_based_dict(self, orders: list) -> dict:
         '''Splits list of orders to country based dict
         Returns:    {'DE': [order1, order2, ...], 'IT': [order1, order2, ...], ...}'''
         country_based_dict = defaultdict(list)
         for order in orders:
-            country_code = order['ship-country']
+            country_code = order[self.proxy_keys['ship-country']]
             country_based_dict[country_code].append(order)
         return country_based_dict
     
-    def _enter_new_country_header(self, country:str, ref_col:int):
+    def _enter_new_country_header(self, country: str, ref_col: int):
         '''enter new country header col values, adjust col widths'''
         self.__enter_header_bold_update_col_widths(REPORT_START_ROW + 1, ref_col, f'{country} Sum')
         self.__enter_header_bold_update_col_widths(REPORT_START_ROW + 1, ref_col + 1, f'{country} #')
@@ -302,13 +304,13 @@ class AmazonOrdersReport():
         # Update cls col reference dict
         self.eu_countries_header_cols[country] = ref_col
     
-    def __enter_header_bold_update_col_widths(self, row:int, col:int, header:str):
+    def __enter_header_bold_update_col_widths(self, row: int, col: int, header: str):
         '''enters header value, bolds it, updates col widths dict'''
         self.s_ws.cell(row, col).value = header
         self._update_col_widths(col, header, zero_indexed=False)
         self.s_ws.cell(row, col).font = BOLD_STYLE
 
-    def _enter_format_country_date_data(self, country_orders:list, country:str, ref_col:int):
+    def _enter_format_country_date_data(self, country_orders: list, country: str, ref_col: int):
         '''add total, count, taxes for currency>date>country orders at self.row_cursor, ref_col, formats number format'''
         self.s_ws.cell(self.row_cursor, ref_col).value = self._get_segment_total(country_orders)
         self.s_ws.cell(self.row_cursor, ref_col).number_format = '#,##0.00'
@@ -316,7 +318,7 @@ class AmazonOrdersReport():
         self.s_ws.cell(self.row_cursor, ref_col + 2).value = self._calc_orders_taxes(country_orders, country)
 
 
-    def export(self, wb_name:str):
+    def export(self, wb_name: str):
         '''Creates workbook, and exports class objects: segments_orders_obj and summary_table_obj to
         segment worksheets and creates report summary sheet, saves new workbook'''
         self.wb = openpyxl.Workbook()
@@ -329,8 +331,11 @@ class AmazonOrdersReport():
         self.wb.close()
 
 
+    
+    # ------------------ REVIEWED ABOVE ------------------------
+
 class AmazonEUOrdersReport(AmazonOrdersReport):
-    '''Indended for use of orders sold through Amazon EU sales channel
+    '''Intended for use of orders sold through AmazonEU / Amazon Warehouse sales channels
     accepts export data dictionary and output file path as arguments, creates individual
     sheets for region & currency based order segregation, creates formatted xlsx report file.
     Error handling is present outside of this class.
@@ -345,14 +350,14 @@ class AmazonEUOrdersReport(AmazonOrdersReport):
     creates summary sheet, calculates regional / currency based totals'''
 
     def _split_by_region(self, orders:list):
-        '''splits provided list of orders into two lists based on order['ship-country'] EU membership:
+        '''splits provided list of orders into two lists based on order['ship-country'] (using proxy keys) EU membership:
         1. eu orders
         2. non-eu orders
-        Specific to AMAZON EU report: orders with tax = 0 are attributed to '''    
+        NOTE: Specific to AMAZON EU report: orders with tax = 0 are attributed to non-EU'''    
         eu_orders, non_eu_orders = [], []
         for order in orders:
-            if order['ship-country'] in self.eu_countries:
-                if order['item-tax'] == 0:
+            if order[self.proxy_keys['ship-country']] in self.eu_countries:
+                if order[self.proxy_keys['item-tax']] == 0:
                     non_eu_orders.append(order)
                 else:
                     eu_orders.append(order)
@@ -362,7 +367,7 @@ class AmazonEUOrdersReport(AmazonOrdersReport):
 
 
 class AmazonCOMOrdersReport(AmazonOrdersReport):
-    '''Intended for use of orders sold through Amazon COM sales channel. Simplified report version
+    '''Intended for use of orders sold through AmazonCOM sales channel. Simplified report version
     based on (inherited from) AmazonOrdersReport class
     
     accepts export data dictionary and output file path as arguments, creates individual
@@ -398,8 +403,8 @@ class AmazonCOMOrdersReport(AmazonOrdersReport):
         '''returns sum of (item-tax + shipping-tax) for each order inside orders list'''
         taxes = 0
         for order in orders:
-            taxes += order['item-tax']
-            taxes += order['shipping-tax']
+            taxes += order[self.proxy_keys['item-tax']]
+            taxes += order[self.proxy_keys['shipping-tax']]
         return round(taxes, 2)
 
     def fill_format_summary(self):

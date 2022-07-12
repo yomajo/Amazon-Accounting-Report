@@ -63,9 +63,10 @@ AMAZON_WAREHOUSE_KEYS = {
 
 SALES_CHANNEL_PROXY_KEYS = {'AmazonCOM': AMAZON_KEYS, 'AmazonEU': AMAZON_KEYS, 'Amazon Warehouse': AMAZON_WAREHOUSE_KEYS,}
 
+# Value corresponds to proxy_keys
 TEMPLATE_SHEET_MAPPING= {
-        'Order ID' : 'order-id',
-        'Order Item ID' : 'order-item-id',
+        'Order ID' : 'secondary-order-id',
+        'Unique ID' : 'order-id',
         'Repicient' : 'recipient-name',
         'Cur.' : 'currency',
         'Q-ty' : 'quantity-purchased',

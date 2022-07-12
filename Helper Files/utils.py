@@ -47,11 +47,7 @@ def alert_vba_date_count(filter_date, orders_count):
 def get_datetime_obj(date_str: str, sales_channel: str):
     '''returns tz-naive datetime obj from date string. Designed to work with str format: 2020-04-16T10:07:16+00:00'''
     try:
-        if sales_channel == 'Amazon Warehouse':
-            return datetime.strptime(date_str, '%Y.%m.%d  %H:%M:%S')
-        else:
-            # AmazonCOM / AmazonEU
-            return datetime.fromisoformat(date_str).replace(tzinfo=None)
+        return datetime.fromisoformat(date_str).replace(tzinfo=None)
     except ValueError:
         logging.critical(f'Change in date format at sales channel: {sales_channel}! Could not parse to datetime: {date_str}. Terminating...')
         print(VBA_ERROR_ALERT)
@@ -132,7 +128,6 @@ def get_file_encoding_delimiter(fpath:str) -> tuple:
             byte_contents = f_as_bytes.read()
             enc_data = charset_normalizer.detect(byte_contents)
             encoding = enc_data['encoding']
-            logging.info(f'Detected file encoding: {encoding}')
         except Exception as e:
             logging.warning(f'charset err: {e} when figuring out file {os.path.basename(fpath)} encoding. Defaulting to utf-8')
             encoding = 'utf-8'

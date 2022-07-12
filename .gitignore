@@ -3,13 +3,14 @@ envacc
 Amazon exports
 .vscode
 __pycache__
-export_data.json
 build
 dist
-amazon_accounting_report.spec
+*.spec
 amzn_accounting.db
 amzn_accounting_b4lrun.db
 amzn_accounting_lrun.db
 Ebay Accounting.xlsm
-TODO.txt
+*.txt
+*.csv
 *.xlsx
+*.json
