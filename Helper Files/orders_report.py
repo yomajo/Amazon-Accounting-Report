@@ -2,7 +2,7 @@ import copy
 from collections import defaultdict
 import openpyxl
 from constants import TEMPLATE_SHEET_MAPPING, EU_SUMMARY_HEADERS, COM_SUMMARY_HEADERS
-from utils import simplify_date, col_to_letter, get_last_used_row_col
+from accounting_utils import simplify_date, col_to_letter, get_last_used_row_col
 
 
 # GLOBAL VARIABLES

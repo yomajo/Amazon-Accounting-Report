@@ -2,7 +2,7 @@ import logging
 import os
 from datetime import datetime
 from collections import defaultdict
-from utils import get_output_dir, get_EU_countries_from_txt, get_order_tax
+from accounting_utils import get_output_dir, get_EU_countries_from_txt, get_order_tax
 from orders_report import AmazonEUOrdersReport, AmazonCOMOrdersReport
 from constants import VBA_ERROR_ALERT, VBA_KEYERROR_ALERT, VBA_NO_NEW_JOB
 

@@ -2,24 +2,24 @@ import logging
 import sys
 import csv
 import os
-from datetime import datetime
+from datetime import datetime, date
 import sqlalchemy.sql.default_comparator    #neccessary for executable packing
-from utils import get_output_dir, get_datetime_obj, alert_vba_date_count
-from utils import get_file_encoding_delimiter, delete_file, dump_to_json
+from accounting_utils import get_output_dir, get_datetime_obj, alert_vba_date_count
+from accounting_utils import get_file_encoding_delimiter, delete_file, dump_to_json
 from parse_orders import ParseOrders
 from orders_db import SQLAlchemyOrdersDB
 from constants import SALES_CHANNEL_PROXY_KEYS, VBA_ERROR_ALERT, VBA_KEYERROR_ALERT, VBA_OK
 
 
 TEST_CASES = [
-    {'channel': 'AmazonEU', 'file': r'C:\Coding\Ebay\Working\Backups\Amazon exports\EU 2022.07.07-15.txt'},
-    {'channel': 'AmazonCOM', 'file': r'C:\Coding\Ebay\Working\Backups\Amazon exports\COM 2022.03.10.txt'},
+    {'channel': 'AmazonEU', 'file': r'C:\Coding\Ebay\Working\Backups\Amazon exports\EU 2022.09.02.txt'},
+    {'channel': 'AmazonCOM', 'file': r'C:\Coding\Ebay\Working\Backups\Amazon exports\COM 2022.10.04.txt'},
     {'channel': 'Amazon Warehouse', 'file': r'C:\Coding\Ebay\Working\Backups\Amazon warehouse csv\warehouse2.csv'},
     ]
 
 # GLOBAL VARIABLES
 TESTING = False
-TEST_CASE = TEST_CASES[2]
+TEST_CASE = TEST_CASES[1]
 # TEST_TODAY_DATE = '2022-06-27'
 TEST_TODAY_DATE = datetime.now().strftime('%Y-%m-%d')   # Hardcode in format: '2021-08-19' if needed when testing
 
@@ -84,9 +84,10 @@ def remove_todays_orders(orders: list, sales_channel: str, proxy_keys: dict) -> 
 def get_today_obj():
     '''returns instance of datetime library corresponding to date (no time) for today used in rest of program'''
     if TESTING:
-        return datetime.strptime(TEST_TODAY_DATE, '%Y-%m-%d') 
+        return datetime.strptime(TEST_TODAY_DATE, '%Y-%m-%d')
     else:
-        return datetime.today()
+        dt_today_date_only = datetime.today().strftime('%Y-%m-%d')
+        return datetime.strptime(dt_today_date_only, '%Y-%m-%d')
 
 def parse_args():
     '''returns source_fpath, sales_channel from cli args or hardcoded testing variables'''    

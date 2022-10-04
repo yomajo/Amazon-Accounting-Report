@@ -8,7 +8,7 @@ from sqlalchemy.orm import sessionmaker, relationship
 from sqlalchemy.sql.sqltypes import TIMESTAMP
 from sqlalchemy.sql.schema import ForeignKey
 from sqlalchemy.exc import IntegrityError
-from utils import get_output_dir, create_src_file_backup, delete_file
+from accounting_utils import get_output_dir, create_src_file_backup, delete_file
 from constants import VBA_ERROR_ALERT
 
 
