@@ -35,3 +35,38 @@ INFO:root:Total of 2767 new orders have been added to database, after exports we
 INFO:root:
 RUN ENDED: 2022.10.04 20:58
 
+INFO:root:
+ NEW RUN STARTING: 2022.11.16 14:52
+CRITICAL:root:Error parsing arguments on script initialization in cmd. Arguments provided: ['c:/Coding/Ebay/Country based sorting/Amazon Accounting Report/Helper Files/main_accounting.py'] Number Expected: 3. Err: Unexpected number of sys.args passed. Check TESTING mode
+INFO:root:
+ NEW RUN STARTING: 2022.11.16 14:52
+WARNING:root:--- RUNNING IN TESTING MODE. Using hardcoded args---
+INFO:root:COM 2022.10.04.txt detected encoding: utf-8, delimiter <	>
+INFO:root:Loaded COM 2022.10.04.txt has 163 raw orders. Filtering out todays orders...
+INFO:root:Filter date used in program: 2022-11-16 00:00:00. Passing to vba and logging strftime format: 2022-11-16
+INFO:root:Orders passed today date filtering: 163/163
+INFO:root:Returning 163/163 new/loaded orders for further processing
+INFO:root:Loaded file contains: 163 (before 2022-11-16 date filter. Further processing: 163 orders
+INFO:root:Running in testing True environment. Change behaviour in export_orders method in ParseOrders class
+INFO:root:Passing orders to create report with AmazonCOMOrdersReport class
+INFO:root:XLSX report AmazonCOM Report 2022.11.16 14.52.xlsx successfully created.
+INFO:root:Total of 163 new orders have been added to database, after exports were completed
+INFO:root:
+RUN ENDED: 2022.11.16 14:53
+
+INFO:root:
+ NEW RUN STARTING: 2022.11.16 14:53
+WARNING:root:--- RUNNING IN TESTING MODE. Using hardcoded args---
+INFO:root:EU 2022.09.02.txt detected encoding: utf-8, delimiter <	>
+INFO:root:Loaded EU 2022.09.02.txt has 2449 raw orders. Filtering out todays orders...
+INFO:root:Filter date used in program: 2022-11-16 00:00:00. Passing to vba and logging strftime format: 2022-11-16
+INFO:root:Orders passed today date filtering: 2449/2449
+INFO:root:Returning 2449/2449 new/loaded orders for further processing
+INFO:root:Loaded file contains: 2449 (before 2022-11-16 date filter. Further processing: 2449 orders
+INFO:root:Running in testing True environment. Change behaviour in export_orders method in ParseOrders class
+INFO:root:Passing orders to create report with AmazonEUOrdersReport class
+INFO:root:XLSX report AmazonEU Report 2022.11.16 14.53.xlsx successfully created.
+INFO:root:Total of 2449 new orders have been added to database, after exports were completed
+INFO:root:
+RUN ENDED: 2022.11.16 14:54
+
