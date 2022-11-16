@@ -110,7 +110,7 @@ def get_EU_countries_from_txt(txt_abspath:str) -> list:
         with open(txt_abspath, 'r') as f:
             for line in f.readlines():
                 countries.append(line.strip())
-        return countries
+        return sorted(countries)
     except Exception as e:
         logging.critical(f'Error reading EU countries from txt file: {txt_abspath}. Err: {e}. Alerting VBA, terminating immediately.')
         print(VBA_ERROR_ALERT)

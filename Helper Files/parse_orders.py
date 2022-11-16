@@ -3,7 +3,7 @@ import os
 from datetime import datetime
 from collections import defaultdict
 from accounting_utils import get_output_dir, get_EU_countries_from_txt, get_order_tax
-from orders_report import AmazonEUOrdersReport, AmazonCOMOrdersReport
+from reports import COMReport, EUReport
 from constants import VBA_ERROR_ALERT, VBA_KEYERROR_ALERT, VBA_NO_NEW_JOB
 
 
@@ -106,14 +106,14 @@ class ParseOrders():
         return currency_based_dict
 
     def export_report(self):
-        '''creates AmazonEUOrdersReport or AmazonCOMOrdersReport instance, and exports report in xlsx format'''
+        '''creates EUReport or COMReport instance, and exports report in xlsx format'''
         try:
             if self.sales_channel in ['AmazonEU', 'Amazon Warehouse']:
-                logging.info(f'Passing orders to create report with {AmazonEUOrdersReport.__name__} class')
-                AmazonEUOrdersReport(self.export_obj, self.eu_countries, self.sales_channel, self.proxy_keys).export(self.report_path)
+                logging.info(f'Passing orders to create report with {EUReport.__name__} class')
+                EUReport(self.export_obj, self.eu_countries, self.sales_channel, self.proxy_keys).export(self.report_path)
             elif self.sales_channel == 'AmazonCOM':
-                logging.info(f'Passing orders to create report with {AmazonCOMOrdersReport.__name__} class')
-                AmazonCOMOrdersReport(self.export_obj, self.eu_countries, self.sales_channel, self.proxy_keys).export(self.report_path)
+                logging.info(f'Passing orders to create report with {COMReport.__name__} class')
+                COMReport(self.export_obj, self.eu_countries, self.sales_channel, self.proxy_keys).export(self.report_path)
             logging.info(f'XLSX report {os.path.basename(self.report_path)} successfully created.')
         except:
             logging.exception(f'Unexpected error creating report. Closing database connection, alerting VBA, exiting ParseOrders...')
@@ -137,7 +137,7 @@ class ParseOrders():
             print(f'Running in testing {testing} environment. Change behaviour in export_orders method in ParseOrders class')
             print('ENABLED REPORT EXPORT WHILE TESTING')            
             self.export_report()
-            self.push_orders_to_db()
+            # self.push_orders_to_db()
             return
         self.export_report()
         self.push_orders_to_db()

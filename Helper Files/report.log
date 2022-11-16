@@ -35,3 +35,330 @@ INFO:root:Total of 2767 new orders have been added to database, after exports we
 INFO:root:
 RUN ENDED: 2022.10.04 20:58
 
+INFO:root:
+ NEW RUN STARTING: 2022.11.08 18:11
+INFO:root:Accepted sys args on launch: source_fpath: C:\Coding\Ebay\Working\Backups\Amazon exports\AmazonEU 2022.11.03.txt; sales_channel: AmazonEU. Whole sys.argv: ['C:\\Coding\\Ebay\\Country based sorting\\Amazon Accounting Report\\Helper Files\\main_accounting.exe', 'C:\\Coding\\Ebay\\Working\\Backups\\Amazon exports\\AmazonEU 2022.11.03.txt', 'AmazonEU']
+INFO:root:AmazonEU 2022.11.03.txt detected encoding: utf-8, delimiter <	>
+INFO:root:Loaded AmazonEU 2022.11.03.txt has 1515 raw orders. Filtering out todays orders...
+INFO:root:Filter date used in program: 2022-11-08 00:00:00. Passing to vba and logging strftime format: 2022-11-08
+INFO:root:Orders passed today date filtering: 1515/1515
+INFO:root:New database backup amzn_accounting_b4lrun.db created on: 2022-11-08 18:11 location: C:\Coding\Ebay\Country based sorting\Amazon Accounting Report\Helper Files\amzn_accounting_b4lrun.db
+INFO:root:Returning 1515/1515 new/loaded orders for further processing
+INFO:root:Loaded file contains: 1515 (before 2022-11-08 date filter. Further processing: 1515 orders
+INFO:root:Passing orders to create report with AmazonEUOrdersReport class
+INFO:root:XLSX report AmazonEU Report 2022.11.08 18.11.xlsx successfully created.
+INFO:root:Backup created at: C:\Coding\Ebay\Country based sorting\Amazon Accounting Report\Helper Files\src files\AmazonEU 22-11-08 18-11.txt
+INFO:root:New database backup amzn_accounting_lrun.db created on: 2022-11-08 18:11 location: C:\Coding\Ebay\Country based sorting\Amazon Accounting Report\Helper Files\amzn_accounting_lrun.db
+INFO:root:Total of 1515 new orders have been added to database, after exports were completed
+INFO:root:
+RUN ENDED: 2022.11.08 18:11
+
+INFO:root:
+ NEW RUN STARTING: 2022.11.08 18:13
+INFO:root:Accepted sys args on launch: source_fpath: C:\Coding\Ebay\Working\Backups\Amazon exports\COM 2022.10.04.txt; sales_channel: AmazonCOM. Whole sys.argv: ['C:\\Coding\\Ebay\\Country based sorting\\Amazon Accounting Report\\Helper Files\\main_accounting.exe', 'C:\\Coding\\Ebay\\Working\\Backups\\Amazon exports\\COM 2022.10.04.txt', 'AmazonCOM']
+INFO:root:COM 2022.10.04.txt detected encoding: utf-8, delimiter <	>
+INFO:root:Loaded COM 2022.10.04.txt has 163 raw orders. Filtering out todays orders...
+INFO:root:Filter date used in program: 2022-11-08 00:00:00. Passing to vba and logging strftime format: 2022-11-08
+INFO:root:Orders passed today date filtering: 163/163
+INFO:root:New database backup amzn_accounting_b4lrun.db created on: 2022-11-08 18:13 location: C:\Coding\Ebay\Country based sorting\Amazon Accounting Report\Helper Files\amzn_accounting_b4lrun.db
+INFO:root:Returning 3/163 new/loaded orders for further processing
+INFO:root:Loaded file contains: 163 (before 2022-11-08 date filter. Further processing: 3 orders
+INFO:root:Passing orders to create report with AmazonCOMOrdersReport class
+INFO:root:XLSX report AmazonCOM Report 2022.11.08 18.13.xlsx successfully created.
+INFO:root:Backup created at: C:\Coding\Ebay\Country based sorting\Amazon Accounting Report\Helper Files\src files\AmazonCOM 22-11-08 18-13.txt
+INFO:root:New database backup amzn_accounting_lrun.db created on: 2022-11-08 18:13 location: C:\Coding\Ebay\Country based sorting\Amazon Accounting Report\Helper Files\amzn_accounting_lrun.db
+INFO:root:Total of 3 new orders have been added to database, after exports were completed
+INFO:root:
+RUN ENDED: 2022.11.08 18:13
+
+INFO:root:
+ NEW RUN STARTING: 2022.11.16 10:20
+WARNING:root:--- RUNNING IN TESTING MODE. Using hardcoded args---
+INFO:root:EU 2022.09.02.txt detected encoding: utf-8, delimiter <	>
+INFO:root:Loaded EU 2022.09.02.txt has 2449 raw orders. Filtering out todays orders...
+INFO:root:Filter date used in program: 2022-11-16 00:00:00. Passing to vba and logging strftime format: 2022-11-16
+INFO:root:Orders passed today date filtering: 2449/2449
+INFO:root:Returning 1277/2449 new/loaded orders for further processing
+INFO:root:Loaded file contains: 2449 (before 2022-11-16 date filter. Further processing: 1277 orders
+INFO:root:Running in testing True environment. Change behaviour in export_orders method in ParseOrders class
+INFO:root:Passing orders to create report with AmazonEUOrdersReport class
+INFO:root:XLSX report AmazonEU Report 2022.11.16 10.20.xlsx successfully created.
+INFO:root:
+RUN ENDED: 2022.11.16 10:20
+
+INFO:root:
+ NEW RUN STARTING: 2022.11.16 10:38
+WARNING:root:--- RUNNING IN TESTING MODE. Using hardcoded args---
+INFO:root:COM 2022.10.04.txt detected encoding: utf-8, delimiter <	>
+INFO:root:Loaded COM 2022.10.04.txt has 163 raw orders. Filtering out todays orders...
+INFO:root:Filter date used in program: 2022-11-16 00:00:00. Passing to vba and logging strftime format: 2022-11-16
+INFO:root:Orders passed today date filtering: 163/163
+INFO:root:Returning 0/163 new/loaded orders for further processing
+INFO:root:Loaded file contains: 163 (before 2022-11-16 date filter. Further processing: 0 orders
+INFO:root:No new orders found. Terminating, closing database connection, alerting VBA.
+INFO:root:
+ NEW RUN STARTING: 2022.11.16 10:39
+WARNING:root:--- RUNNING IN TESTING MODE. Using hardcoded args---
+INFO:root:COM 2022.10.04.txt detected encoding: utf-8, delimiter <	>
+INFO:root:Loaded COM 2022.10.04.txt has 163 raw orders. Filtering out todays orders...
+INFO:root:Filter date used in program: 2022-11-16 00:00:00. Passing to vba and logging strftime format: 2022-11-16
+INFO:root:Orders passed today date filtering: 163/163
+INFO:root:Database has been created at c:\Coding\Ebay\Country based sorting\Amazon Accounting Report\Helper Files\amzn_accounting.db
+INFO:root:Returning 163/163 new/loaded orders for further processing
+INFO:root:Loaded file contains: 163 (before 2022-11-16 date filter. Further processing: 163 orders
+INFO:root:Running in testing True environment. Change behaviour in export_orders method in ParseOrders class
+INFO:root:Passing orders to create report with AmazonCOMOrdersReport class
+INFO:root:XLSX report AmazonCOM Report 2022.11.16 10.39.xlsx successfully created.
+INFO:root:
+RUN ENDED: 2022.11.16 10:39
+
+INFO:root:
+ NEW RUN STARTING: 2022.11.16 12:36
+WARNING:root:--- RUNNING IN TESTING MODE. Using hardcoded args---
+INFO:root:EU 2022.09.02.txt detected encoding: utf-8, delimiter <	>
+INFO:root:Loaded EU 2022.09.02.txt has 2449 raw orders. Filtering out todays orders...
+INFO:root:Filter date used in program: 2022-11-16 00:00:00. Passing to vba and logging strftime format: 2022-11-16
+INFO:root:Orders passed today date filtering: 2449/2449
+INFO:root:Returning 2449/2449 new/loaded orders for further processing
+INFO:root:Loaded file contains: 2449 (before 2022-11-16 date filter. Further processing: 2449 orders
+INFO:root:Running in testing True environment. Change behaviour in export_orders method in ParseOrders class
+INFO:root:Passing orders to create report with EUReport class
+INFO:root:XLSX report AmazonEU Report 2022.11.16 12.36.xlsx successfully created.
+INFO:root:
+RUN ENDED: 2022.11.16 12:36
+
+INFO:root:
+ NEW RUN STARTING: 2022.11.16 12:49
+WARNING:root:--- RUNNING IN TESTING MODE. Using hardcoded args---
+INFO:root:EU 2022.09.02.txt detected encoding: utf-8, delimiter <	>
+INFO:root:Loaded EU 2022.09.02.txt has 2449 raw orders. Filtering out todays orders...
+INFO:root:Filter date used in program: 2022-11-16 00:00:00. Passing to vba and logging strftime format: 2022-11-16
+INFO:root:Orders passed today date filtering: 2449/2449
+INFO:root:Returning 2449/2449 new/loaded orders for further processing
+INFO:root:Loaded file contains: 2449 (before 2022-11-16 date filter. Further processing: 2449 orders
+INFO:root:Running in testing True environment. Change behaviour in export_orders method in ParseOrders class
+INFO:root:Passing orders to create report with EUReport class
+INFO:root:XLSX report AmazonEU Report 2022.11.16 12.49.xlsx successfully created.
+INFO:root:
+RUN ENDED: 2022.11.16 12:50
+
+INFO:root:
+ NEW RUN STARTING: 2022.11.16 13:16
+WARNING:root:--- RUNNING IN TESTING MODE. Using hardcoded args---
+INFO:root:EU 2022.09.02.txt detected encoding: utf-8, delimiter <	>
+INFO:root:Loaded EU 2022.09.02.txt has 2449 raw orders. Filtering out todays orders...
+INFO:root:Filter date used in program: 2022-11-16 00:00:00. Passing to vba and logging strftime format: 2022-11-16
+INFO:root:Orders passed today date filtering: 2449/2449
+INFO:root:Returning 2449/2449 new/loaded orders for further processing
+INFO:root:Loaded file contains: 2449 (before 2022-11-16 date filter. Further processing: 2449 orders
+INFO:root:Running in testing True environment. Change behaviour in export_orders method in ParseOrders class
+INFO:root:Passing orders to create report with EUReport class
+ERROR:root:Unexpected error creating report. Closing database connection, alerting VBA, exiting ParseOrders...
+Traceback (most recent call last):
+  File "c:\Coding\Ebay\Country based sorting\Amazon Accounting Report\Helper Files\parse_orders.py", line 113, in export_report
+    EUReport(self.export_obj, self.eu_countries, self.sales_channel, self.proxy_keys).export(self.report_path)
+  File "c:\Coding\Ebay\Country based sorting\Amazon Accounting Report\Helper Files\reports\eu_report.py", line 376, in export
+    self.fill_format_summary()
+  File "c:\Coding\Ebay\Country based sorting\Amazon Accounting Report\Helper Files\reports\eu_report.py", line 219, in fill_format_summary
+    self._add_sum_row_below_currency_segment()
+  File "c:\Coding\Ebay\Country based sorting\Amazon Accounting Report\Helper Files\reports\eu_report.py", line 246, in _add_sum_row_below_currency_segment
+    self.s_ws.cell(self.row_cursor, c).value = self._get_ccy_segment_total(c)
+  File "c:\Coding\Ebay\Country based sorting\Amazon Accounting Report\Helper Files\reports\eu_report.py", line 253, in _get_ccy_segment_total
+    total += self.s_ws.cell(r, c).value
+TypeError: unsupported operand type(s) for +=: 'int' and 'str'
+INFO:root:
+ NEW RUN STARTING: 2022.11.16 13:22
+WARNING:root:--- RUNNING IN TESTING MODE. Using hardcoded args---
+INFO:root:EU 2022.09.02.txt detected encoding: utf-8, delimiter <	>
+INFO:root:Loaded EU 2022.09.02.txt has 2449 raw orders. Filtering out todays orders...
+INFO:root:Filter date used in program: 2022-11-16 00:00:00. Passing to vba and logging strftime format: 2022-11-16
+INFO:root:Orders passed today date filtering: 2449/2449
+INFO:root:Returning 2449/2449 new/loaded orders for further processing
+INFO:root:Loaded file contains: 2449 (before 2022-11-16 date filter. Further processing: 2449 orders
+INFO:root:Running in testing True environment. Change behaviour in export_orders method in ParseOrders class
+INFO:root:Passing orders to create report with EUReport class
+ERROR:root:Unexpected error creating report. Closing database connection, alerting VBA, exiting ParseOrders...
+Traceback (most recent call last):
+  File "c:\Coding\Ebay\Country based sorting\Amazon Accounting Report\Helper Files\parse_orders.py", line 113, in export_report
+    EUReport(self.export_obj, self.eu_countries, self.sales_channel, self.proxy_keys).export(self.report_path)
+  File "c:\Coding\Ebay\Country based sorting\Amazon Accounting Report\Helper Files\reports\eu_report.py", line 381, in export
+    self.fill_format_summary()
+  File "c:\Coding\Ebay\Country based sorting\Amazon Accounting Report\Helper Files\reports\eu_report.py", line 219, in fill_format_summary
+    self._add_sum_row_below_currency_segment()
+  File "c:\Coding\Ebay\Country based sorting\Amazon Accounting Report\Helper Files\reports\eu_report.py", line 246, in _add_sum_row_below_currency_segment
+    self.s_ws.cell(self.row_cursor, c).value = self._get_ccy_segment_total(c)
+  File "c:\Coding\Ebay\Country based sorting\Amazon Accounting Report\Helper Files\reports\eu_report.py", line 254, in _get_ccy_segment_total
+    cell_value = int(self.s_ws.cell(r, c).value)
+TypeError: int() argument must be a string, a bytes-like object or a number, not 'NoneType'
+INFO:root:
+ NEW RUN STARTING: 2022.11.16 13:24
+WARNING:root:--- RUNNING IN TESTING MODE. Using hardcoded args---
+INFO:root:EU 2022.09.02.txt detected encoding: utf-8, delimiter <	>
+INFO:root:Loaded EU 2022.09.02.txt has 2449 raw orders. Filtering out todays orders...
+INFO:root:Filter date used in program: 2022-11-16 00:00:00. Passing to vba and logging strftime format: 2022-11-16
+INFO:root:Orders passed today date filtering: 2449/2449
+INFO:root:Returning 2449/2449 new/loaded orders for further processing
+INFO:root:Loaded file contains: 2449 (before 2022-11-16 date filter. Further processing: 2449 orders
+INFO:root:Running in testing True environment. Change behaviour in export_orders method in ParseOrders class
+INFO:root:Passing orders to create report with EUReport class
+INFO:root:XLSX report AmazonEU Report 2022.11.16 13.24.xlsx successfully created.
+INFO:root:
+RUN ENDED: 2022.11.16 13:24
+
+INFO:root:
+ NEW RUN STARTING: 2022.11.16 13:30
+WARNING:root:--- RUNNING IN TESTING MODE. Using hardcoded args---
+INFO:root:EU 2022.09.02.txt detected encoding: utf-8, delimiter <	>
+INFO:root:Loaded EU 2022.09.02.txt has 2449 raw orders. Filtering out todays orders...
+INFO:root:Filter date used in program: 2022-11-16 00:00:00. Passing to vba and logging strftime format: 2022-11-16
+INFO:root:Orders passed today date filtering: 2449/2449
+INFO:root:Returning 2449/2449 new/loaded orders for further processing
+INFO:root:Loaded file contains: 2449 (before 2022-11-16 date filter. Further processing: 2449 orders
+INFO:root:Running in testing True environment. Change behaviour in export_orders method in ParseOrders class
+INFO:root:Passing orders to create report with EUReport class
+INFO:root:XLSX report AmazonEU Report 2022.11.16 13.30.xlsx successfully created.
+INFO:root:
+RUN ENDED: 2022.11.16 13:30
+
+INFO:root:
+ NEW RUN STARTING: 2022.11.16 13:36
+WARNING:root:--- RUNNING IN TESTING MODE. Using hardcoded args---
+INFO:root:EU 2022.09.02.txt detected encoding: utf-8, delimiter <	>
+INFO:root:Loaded EU 2022.09.02.txt has 2449 raw orders. Filtering out todays orders...
+INFO:root:Filter date used in program: 2022-11-16 00:00:00. Passing to vba and logging strftime format: 2022-11-16
+INFO:root:Orders passed today date filtering: 2449/2449
+INFO:root:Returning 2449/2449 new/loaded orders for further processing
+INFO:root:Loaded file contains: 2449 (before 2022-11-16 date filter. Further processing: 2449 orders
+INFO:root:Running in testing True environment. Change behaviour in export_orders method in ParseOrders class
+INFO:root:Passing orders to create report with EUReport class
+INFO:root:XLSX report AmazonEU Report 2022.11.16 13.36.xlsx successfully created.
+INFO:root:
+RUN ENDED: 2022.11.16 13:37
+
+INFO:root:
+ NEW RUN STARTING: 2022.11.16 13:41
+WARNING:root:--- RUNNING IN TESTING MODE. Using hardcoded args---
+INFO:root:EU 2022.09.02.txt detected encoding: utf-8, delimiter <	>
+INFO:root:Loaded EU 2022.09.02.txt has 2449 raw orders. Filtering out todays orders...
+INFO:root:Filter date used in program: 2022-11-16 00:00:00. Passing to vba and logging strftime format: 2022-11-16
+INFO:root:Orders passed today date filtering: 2449/2449
+INFO:root:Returning 2449/2449 new/loaded orders for further processing
+INFO:root:Loaded file contains: 2449 (before 2022-11-16 date filter. Further processing: 2449 orders
+INFO:root:Running in testing True environment. Change behaviour in export_orders method in ParseOrders class
+INFO:root:Passing orders to create report with EUReport class
+INFO:root:XLSX report AmazonEU Report 2022.11.16 13.41.xlsx successfully created.
+INFO:root:
+RUN ENDED: 2022.11.16 13:41
+
+INFO:root:
+ NEW RUN STARTING: 2022.11.16 13:47
+WARNING:root:--- RUNNING IN TESTING MODE. Using hardcoded args---
+INFO:root:EU 2022.09.02.txt detected encoding: utf-8, delimiter <	>
+INFO:root:Loaded EU 2022.09.02.txt has 2449 raw orders. Filtering out todays orders...
+INFO:root:Filter date used in program: 2022-11-16 00:00:00. Passing to vba and logging strftime format: 2022-11-16
+INFO:root:Orders passed today date filtering: 2449/2449
+INFO:root:Returning 2449/2449 new/loaded orders for further processing
+INFO:root:Loaded file contains: 2449 (before 2022-11-16 date filter. Further processing: 2449 orders
+INFO:root:Running in testing True environment. Change behaviour in export_orders method in ParseOrders class
+INFO:root:Passing orders to create report with EUReport class
+INFO:root:XLSX report AmazonEU Report 2022.11.16 13.47.xlsx successfully created.
+INFO:root:
+RUN ENDED: 2022.11.16 13:47
+
+INFO:root:
+ NEW RUN STARTING: 2022.11.16 13:51
+WARNING:root:--- RUNNING IN TESTING MODE. Using hardcoded args---
+INFO:root:EU 2022.09.02.txt detected encoding: utf-8, delimiter <	>
+INFO:root:Loaded EU 2022.09.02.txt has 2449 raw orders. Filtering out todays orders...
+INFO:root:Filter date used in program: 2022-11-16 00:00:00. Passing to vba and logging strftime format: 2022-11-16
+INFO:root:Orders passed today date filtering: 2449/2449
+INFO:root:Returning 2449/2449 new/loaded orders for further processing
+INFO:root:Loaded file contains: 2449 (before 2022-11-16 date filter. Further processing: 2449 orders
+INFO:root:Running in testing True environment. Change behaviour in export_orders method in ParseOrders class
+INFO:root:Passing orders to create report with EUReport class
+INFO:root:XLSX report AmazonEU Report 2022.11.16 13.51.xlsx successfully created.
+INFO:root:
+RUN ENDED: 2022.11.16 13:51
+
+INFO:root:
+ NEW RUN STARTING: 2022.11.16 13:53
+WARNING:root:--- RUNNING IN TESTING MODE. Using hardcoded args---
+INFO:root:EU 2022.09.02.txt detected encoding: utf-8, delimiter <	>
+INFO:root:Loaded EU 2022.09.02.txt has 2449 raw orders. Filtering out todays orders...
+INFO:root:Filter date used in program: 2022-11-16 00:00:00. Passing to vba and logging strftime format: 2022-11-16
+INFO:root:Orders passed today date filtering: 2449/2449
+INFO:root:Returning 2449/2449 new/loaded orders for further processing
+INFO:root:Loaded file contains: 2449 (before 2022-11-16 date filter. Further processing: 2449 orders
+INFO:root:Running in testing True environment. Change behaviour in export_orders method in ParseOrders class
+INFO:root:Passing orders to create report with EUReport class
+INFO:root:XLSX report AmazonEU Report 2022.11.16 13.53.xlsx successfully created.
+INFO:root:
+RUN ENDED: 2022.11.16 13:53
+
+INFO:root:
+ NEW RUN STARTING: 2022.11.16 13:56
+WARNING:root:--- RUNNING IN TESTING MODE. Using hardcoded args---
+INFO:root:EU 2022.09.02.txt detected encoding: utf-8, delimiter <	>
+INFO:root:Loaded EU 2022.09.02.txt has 2449 raw orders. Filtering out todays orders...
+INFO:root:Filter date used in program: 2022-11-16 00:00:00. Passing to vba and logging strftime format: 2022-11-16
+INFO:root:Orders passed today date filtering: 2449/2449
+INFO:root:Returning 2449/2449 new/loaded orders for further processing
+INFO:root:Loaded file contains: 2449 (before 2022-11-16 date filter. Further processing: 2449 orders
+INFO:root:Running in testing True environment. Change behaviour in export_orders method in ParseOrders class
+INFO:root:Passing orders to create report with EUReport class
+INFO:root:XLSX report AmazonEU Report 2022.11.16 13.56.xlsx successfully created.
+INFO:root:
+RUN ENDED: 2022.11.16 13:56
+
+INFO:root:
+ NEW RUN STARTING: 2022.11.16 14:36
+WARNING:root:--- RUNNING IN TESTING MODE. Using hardcoded args---
+INFO:root:EU 2022.09.02.txt detected encoding: utf-8, delimiter <	>
+INFO:root:Loaded EU 2022.09.02.txt has 2449 raw orders. Filtering out todays orders...
+INFO:root:Filter date used in program: 2022-11-16 00:00:00. Passing to vba and logging strftime format: 2022-11-16
+INFO:root:Orders passed today date filtering: 2449/2449
+INFO:root:Returning 2449/2449 new/loaded orders for further processing
+INFO:root:Loaded file contains: 2449 (before 2022-11-16 date filter. Further processing: 2449 orders
+INFO:root:Running in testing True environment. Change behaviour in export_orders method in ParseOrders class
+INFO:root:Passing orders to create report with EUReport class
+ERROR:root:Unexpected error creating report. Closing database connection, alerting VBA, exiting ParseOrders...
+Traceback (most recent call last):
+  File "c:\Coding\Ebay\Country based sorting\Amazon Accounting Report\Helper Files\parse_orders.py", line 113, in export_report
+    EUReport(self.export_obj, self.eu_countries, self.sales_channel, self.proxy_keys).export(self.report_path)
+  File "c:\Coding\Ebay\Country based sorting\Amazon Accounting Report\Helper Files\reports\eu_report.py", line 398, in export
+    self.fill_format_summary()
+  File "c:\Coding\Ebay\Country based sorting\Amazon Accounting Report\Helper Files\reports\eu_report.py", line 219, in fill_format_summary
+    self._add_sum_row_below_currency_segment()
+  File "c:\Coding\Ebay\Country based sorting\Amazon Accounting Report\Helper Files\reports\eu_report.py", line 255, in _add_sum_row_below_currency_segment
+    self.s_ws.cell(self.row_cursor, c).value = self._get_ccy_segment_total(c) + self._get_ccy_segment_total(c + 2)
+TypeError: unsupported operand type(s) for +: 'float' and 'str'
+INFO:root:
+ NEW RUN STARTING: 2022.11.16 14:37
+WARNING:root:--- RUNNING IN TESTING MODE. Using hardcoded args---
+INFO:root:EU 2022.09.02.txt detected encoding: utf-8, delimiter <	>
+INFO:root:Loaded EU 2022.09.02.txt has 2449 raw orders. Filtering out todays orders...
+INFO:root:Filter date used in program: 2022-11-16 00:00:00. Passing to vba and logging strftime format: 2022-11-16
+INFO:root:Orders passed today date filtering: 2449/2449
+INFO:root:Returning 2449/2449 new/loaded orders for further processing
+INFO:root:Loaded file contains: 2449 (before 2022-11-16 date filter. Further processing: 2449 orders
+INFO:root:Running in testing True environment. Change behaviour in export_orders method in ParseOrders class
+INFO:root:Passing orders to create report with EUReport class
+INFO:root:XLSX report AmazonEU Report 2022.11.16 14.37.xlsx successfully created.
+INFO:root:
+RUN ENDED: 2022.11.16 14:38
+
+INFO:root:
+ NEW RUN STARTING: 2022.11.16 14:42
+WARNING:root:--- RUNNING IN TESTING MODE. Using hardcoded args---
+INFO:root:EU 2022.09.02.txt detected encoding: utf-8, delimiter <	>
+INFO:root:Loaded EU 2022.09.02.txt has 2449 raw orders. Filtering out todays orders...
+INFO:root:Filter date used in program: 2022-11-16 00:00:00. Passing to vba and logging strftime format: 2022-11-16
+INFO:root:Orders passed today date filtering: 2449/2449
+INFO:root:Returning 2449/2449 new/loaded orders for further processing
+INFO:root:Loaded file contains: 2449 (before 2022-11-16 date filter. Further processing: 2449 orders
+INFO:root:Running in testing True environment. Change behaviour in export_orders method in ParseOrders class
+INFO:root:Passing orders to create report with EUReport class
+INFO:root:XLSX report AmazonEU Report 2022.11.16 14.42.xlsx successfully created.
+INFO:root:
+RUN ENDED: 2022.11.16 14:42
+
