@@ -201,6 +201,7 @@ class COMReport():
         self._color_table_headers()
         # Add data for each currency:
         for currency, date_objs in self.summary_table_obj.items():
+            self.currency_segment_start_row = self.row_cursor
             self._apply_horizontal_line(self.row_cursor)
             self.s_ws.cell(self.row_cursor, REPORT_START_COL).value = currency
             self.s_ws.cell(self.row_cursor, REPORT_START_COL).font = BOLD_STYLE
@@ -211,7 +212,10 @@ class COMReport():
                 taxes = self.summary_taxes_obj[currency][date]
                 self.s_ws.cell(self.row_cursor, REPORT_START_COL + 9).value = taxes
                 self.row_cursor += 1
-        # Adjust column widths
+
+            self._add_sum_row_below_currency_segment()
+
+        self._color_table_headers()
         self._adjust_col_widths(self.s_ws, self.col_widths, summary=True)
 
     def _add_summary_headers(self):
@@ -225,6 +229,41 @@ class COMReport():
             self._update_col_widths(REPORT_START_COL + idx, header, zero_indexed=False)
             self.s_ws.cell(self.row_cursor, REPORT_START_COL + idx).font = BOLD_STYLE
         self.row_cursor += 1
+
+    def _add_sum_row_below_currency_segment(self):
+        '''adds SUM row below currency segment and inserts vertical sums (sum across row dates)
+        segment in rows: {self.currency_segment_start_row}:{self.row_cursor-1}'''
+        self.s_ws.cell(self.row_cursor, REPORT_START_COL).font = BOLD_STYLE
+        self.s_ws.cell(self.row_cursor, REPORT_START_COL).fill = BACKGROUND_COLOR_STYLE
+        self.s_ws.cell(self.row_cursor, REPORT_START_COL + 1).value = 'SUM'
+        self.s_ws.cell(self.row_cursor, REPORT_START_COL + 1).font = BOLD_STYLE
+        self.s_ws.cell(self.row_cursor, REPORT_START_COL + 1).fill = BACKGROUND_COLOR_STYLE
+
+        current_limits = get_last_used_row_col(self.s_ws)
+        curr_last_col = current_limits['max_col']
+
+        for c in range(REPORT_START_COL + 2, curr_last_col + 1):
+            header = self.s_ws.cell(REPORT_START_ROW + 1, c).value
+            if bool(header):
+                tgt_value = self._get_ccy_segment_total(c)
+                self.s_ws.cell(self.row_cursor, c).value = tgt_value if tgt_value > 0 else ''
+
+            # if column name (row 2) does not contain '#', format as number
+            if not '#' in header:
+                self.s_ws.cell(self.row_cursor, c).number_format = '#,##0.00'
+            self.s_ws.cell(self.row_cursor, c).fill = BACKGROUND_COLOR_STYLE
+        self.row_cursor += 1
+
+    def _get_ccy_segment_total(self, c: int):
+        '''returns segment total, summing across rows for specific column (arg: c)'''
+        total = 0.0
+        for r in range(self.currency_segment_start_row, self.row_cursor):
+            try:
+                cell_value = float(self.s_ws.cell(r, c).value)
+            except (ValueError, TypeError):
+                cell_value = 0
+            total += cell_value
+        return round(total, 2)
 
     def _color_table_headers(self):
         '''Colors range defined in generator in summary sheet'''

@@ -214,14 +214,12 @@ class EUReport():
                 uk_tax = self.summary_taxes_obj[currency][date]
                 self.s_ws.cell(self.row_cursor, REPORT_START_COL + 7).value = uk_tax
                 self.s_ws.cell(self.row_cursor, REPORT_START_COL + 8).value = self.cached_non_vat_total - uk_tax
-
                 self.row_cursor += 1
+
             self._add_sum_row_below_currency_segment()
 
         self._color_table_headers()
         self._adjust_col_widths(self.s_ws, self.col_widths, summary=True)
-
-
 
     def _add_summary_headers(self):
         '''writes fixed headers in summary sheet, freeze panes'''
@@ -274,7 +272,6 @@ class EUReport():
             except (ValueError, TypeError):
                 cell_value = 0
             total += cell_value
-        # print(f'Calc total for c: {c} on row: {} (start ccy segment row: {self.currency_segment_start_row} to {}')
         return round(total, 2)
 
     def _color_table_headers(self):

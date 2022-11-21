@@ -71,3 +71,85 @@ INFO:root:Total of 20 new orders have been added to database, after exports were
 INFO:root:
 RUN ENDED: 2022.11.16 15:19
 
+INFO:root:
+ NEW RUN STARTING: 2022.11.21 11:14
+WARNING:root:--- RUNNING IN TESTING MODE. Using hardcoded args---
+INFO:root:COM 2022.10.04.txt detected encoding: utf-8, delimiter <	>
+INFO:root:Loaded COM 2022.10.04.txt has 163 raw orders. Filtering out todays orders...
+INFO:root:Filter date used in program: 2022-11-21 00:00:00. Passing to vba and logging strftime format: 2022-11-21
+INFO:root:Orders passed today date filtering: 163/163
+INFO:root:Returning 163/163 new/loaded orders for further processing
+INFO:root:Loaded file contains: 163 (before 2022-11-21 date filter. Further processing: 163 orders
+INFO:root:Running in testing True environment. Change behaviour in export_orders method in ParseOrders class
+INFO:root:Passing orders to create report with COMReport class
+INFO:root:XLSX report AmazonCOM Report 2022.11.21 11.14.xlsx successfully created.
+INFO:root:
+RUN ENDED: 2022.11.21 11:14
+
+INFO:root:
+ NEW RUN STARTING: 2022.11.21 11:17
+WARNING:root:--- RUNNING IN TESTING MODE. Using hardcoded args---
+INFO:root:COM 2022.10.04.txt detected encoding: utf-8, delimiter <	>
+INFO:root:Loaded COM 2022.10.04.txt has 163 raw orders. Filtering out todays orders...
+INFO:root:Filter date used in program: 2022-11-21 00:00:00. Passing to vba and logging strftime format: 2022-11-21
+INFO:root:Orders passed today date filtering: 163/163
+INFO:root:Returning 163/163 new/loaded orders for further processing
+INFO:root:Loaded file contains: 163 (before 2022-11-21 date filter. Further processing: 163 orders
+INFO:root:Running in testing True environment. Change behaviour in export_orders method in ParseOrders class
+INFO:root:Passing orders to create report with COMReport class
+INFO:root:XLSX report AmazonCOM Report 2022.11.21 11.17.xlsx successfully created.
+INFO:root:
+RUN ENDED: 2022.11.21 11:17
+
+INFO:root:
+ NEW RUN STARTING: 2022.11.21 11:20
+WARNING:root:--- RUNNING IN TESTING MODE. Using hardcoded args---
+INFO:root:COM 2022.10.04.txt detected encoding: utf-8, delimiter <	>
+INFO:root:Loaded COM 2022.10.04.txt has 163 raw orders. Filtering out todays orders...
+INFO:root:Filter date used in program: 2022-11-21 00:00:00. Passing to vba and logging strftime format: 2022-11-21
+INFO:root:Orders passed today date filtering: 163/163
+INFO:root:Returning 163/163 new/loaded orders for further processing
+INFO:root:Loaded file contains: 163 (before 2022-11-21 date filter. Further processing: 163 orders
+INFO:root:Running in testing True environment. Change behaviour in export_orders method in ParseOrders class
+INFO:root:Passing orders to create report with COMReport class
+INFO:root:XLSX report AmazonCOM Report 2022.11.21 11.20.xlsx successfully created.
+INFO:root:
+RUN ENDED: 2022.11.21 11:20
+
+INFO:root:
+ NEW RUN STARTING: 2022.11.21 11:30
+INFO:root:Accepted sys args on launch: source_fpath: C:\Coding\Ebay\Working\Backups\Amazon exports\COM 2022.09.01.txt; sales_channel: AmazonCOM. Whole sys.argv: ['C:\\Coding\\Ebay\\Country based sorting\\Amazon Accounting Report\\Helper Files\\main_accounting.exe', 'C:\\Coding\\Ebay\\Working\\Backups\\Amazon exports\\COM 2022.09.01.txt', 'AmazonCOM']
+INFO:root:COM 2022.09.01.txt detected encoding: utf-8, delimiter <	>
+INFO:root:Loaded COM 2022.09.01.txt has 155 raw orders. Filtering out todays orders...
+INFO:root:Filter date used in program: 2022-11-21 00:00:00. Passing to vba and logging strftime format: 2022-11-21
+INFO:root:Orders passed today date filtering: 155/155
+INFO:root:Database has been created at C:\Coding\Ebay\Country based sorting\Amazon Accounting Report\Helper Files\amzn_accounting.db
+INFO:root:New database backup amzn_accounting_b4lrun.db created on: 2022-11-21 11:30 location: C:\Coding\Ebay\Country based sorting\Amazon Accounting Report\Helper Files\amzn_accounting_b4lrun.db
+INFO:root:Returning 155/155 new/loaded orders for further processing
+INFO:root:Loaded file contains: 155 (before 2022-11-21 date filter. Further processing: 155 orders
+INFO:root:Passing orders to create report with COMReport class
+INFO:root:XLSX report AmazonCOM Report 2022.11.21 11.30.xlsx successfully created.
+INFO:root:Backup created at: C:\Coding\Ebay\Country based sorting\Amazon Accounting Report\Helper Files\src files\AmazonCOM 22-11-21 11-30.txt
+INFO:root:New database backup amzn_accounting_lrun.db created on: 2022-11-21 11:30 location: C:\Coding\Ebay\Country based sorting\Amazon Accounting Report\Helper Files\amzn_accounting_lrun.db
+INFO:root:Total of 155 new orders have been added to database, after exports were completed
+INFO:root:
+RUN ENDED: 2022.11.21 11:30
+
+INFO:root:
+ NEW RUN STARTING: 2022.11.21 11:32
+INFO:root:Accepted sys args on launch: source_fpath: C:\Coding\Ebay\Working\Backups\Amazon exports\EU 2022.09.30.txt; sales_channel: AmazonEU. Whole sys.argv: ['C:\\Coding\\Ebay\\Country based sorting\\Amazon Accounting Report\\Helper Files\\main_accounting.exe', 'C:\\Coding\\Ebay\\Working\\Backups\\Amazon exports\\EU 2022.09.30.txt', 'AmazonEU']
+INFO:root:EU 2022.09.30.txt detected encoding: utf-8, delimiter <	>
+INFO:root:Loaded EU 2022.09.30.txt has 361 raw orders. Filtering out todays orders...
+INFO:root:Filter date used in program: 2022-11-21 00:00:00. Passing to vba and logging strftime format: 2022-11-21
+INFO:root:Orders passed today date filtering: 361/361
+INFO:root:New database backup amzn_accounting_b4lrun.db created on: 2022-11-21 11:32 location: C:\Coding\Ebay\Country based sorting\Amazon Accounting Report\Helper Files\amzn_accounting_b4lrun.db
+INFO:root:Returning 361/361 new/loaded orders for further processing
+INFO:root:Loaded file contains: 361 (before 2022-11-21 date filter. Further processing: 361 orders
+INFO:root:Passing orders to create report with EUReport class
+INFO:root:XLSX report AmazonEU Report 2022.11.21 11.32.xlsx successfully created.
+INFO:root:Backup created at: C:\Coding\Ebay\Country based sorting\Amazon Accounting Report\Helper Files\src files\AmazonEU 22-11-21 11-32.txt
+INFO:root:New database backup amzn_accounting_lrun.db created on: 2022-11-21 11:32 location: C:\Coding\Ebay\Country based sorting\Amazon Accounting Report\Helper Files\amzn_accounting_lrun.db
+INFO:root:Total of 361 new orders have been added to database, after exports were completed
+INFO:root:
+RUN ENDED: 2022.11.21 11:32
+
