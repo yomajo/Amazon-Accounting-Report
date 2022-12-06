@@ -18,8 +18,8 @@ TEST_CASES = [
 ]
 
 # GLOBAL VARIABLES
-TESTING = False
-TEST_CASE = TEST_CASES[1]
+TESTING = True
+TEST_CASE = TEST_CASES[0]
 # TEST_TODAY_DATE = '2022-06-27'
 TEST_TODAY_DATE = datetime.now().strftime('%Y-%m-%d')   # Hardcode in format: '2021-08-19' if needed when testing
 

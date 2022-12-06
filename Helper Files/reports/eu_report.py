@@ -201,6 +201,7 @@ class EUReport():
         self.eu_countries_header_cols = {}
         self.row_cursor = REPORT_START_ROW
         self._add_summary_headers()
+        self._add_eu_headers()
         # Add data for each currency:
         for currency, date_objs in self.summary_table_obj.items():
             self.ccy_segment_start_row = self.row_cursor
@@ -235,6 +236,15 @@ class EUReport():
             self._update_col_widths(REPORT_START_COL + idx, header, zero_indexed=False)
             self.s_ws.cell(self.row_cursor, REPORT_START_COL + idx).font = BOLD_STYLE
         self.row_cursor += 1
+
+    def _add_eu_headers(self):
+        '''add eu countries cols to have fixed number and place of EU countries cols'''
+        last_used_row_col = get_last_used_row_col(self.s_ws)
+        for country in self.eu_countries:
+            last_used_row_col = get_last_used_row_col(self.s_ws)
+            ref_col = last_used_row_col['max_col'] + 1
+            # Enter data for existing self.row_cursor and new_col
+            self._enter_new_country_header(country, ref_col)
 
     def _add_sum_row_below_currency_segment(self):
         '''adds SUM row below currency segment and inserts vertical sums (sum across row dates)
