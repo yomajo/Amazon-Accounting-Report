@@ -15,7 +15,7 @@ TEST_CASES = [
     {'channel': 'AmazonEU', 'file': r'C:\Coding\Ebay\Working\Backups\Amazon exports\EU 2022.09.02.txt'},
     {'channel': 'AmazonCOM', 'file': r'C:\Coding\Ebay\Working\Backups\Amazon exports\COM 2022.10.04.txt'},
     {'channel': 'Amazon Warehouse', 'file': r'C:\Coding\Ebay\Working\Backups\Amazon warehouse csv\warehouse2.csv'},
-    ]
+]
 
 # GLOBAL VARIABLES
 TESTING = False

@@ -2,11 +2,12 @@ import copy
 from collections import defaultdict
 import openpyxl
 from constants import TEMPLATE_SHEET_MAPPING, COM_SUMMARY_HEADERS
-from accounting_utils import simplify_date, col_to_letter, get_last_used_row_col
+from accounting_utils import simplify_date, col_to_letter, get_last_used_row_col, sum_formula_total
 
 
 # GLOBAL VARIABLES
 SUMMARY_SHEET_NAME = 'Summary'
+TABLE_NAME = 'Daily Breakdown'
 BOLD_STYLE = openpyxl.styles.Font(bold=True, name='Calibri')
 BACKGROUND_COLOR_STYLE = openpyxl.styles.PatternFill(fgColor='D6DEFF',fill_type='solid')
 THIN_BORDER = openpyxl.styles.Side(border_style='thin')
@@ -201,7 +202,8 @@ class COMReport():
         self._color_table_headers()
         # Add data for each currency:
         for currency, date_objs in self.summary_table_obj.items():
-            self.currency_segment_start_row = self.row_cursor
+            self.ccy_segment_start_row = self.row_cursor
+            
             self._apply_horizontal_line(self.row_cursor)
             self.s_ws.cell(self.row_cursor, REPORT_START_COL).value = currency
             self.s_ws.cell(self.row_cursor, REPORT_START_COL).font = BOLD_STYLE
@@ -220,7 +222,7 @@ class COMReport():
 
     def _add_summary_headers(self):
         '''writes fixed headers in summary sheet, freeze pane'''
-        self.s_ws.cell(self.row_cursor, REPORT_START_COL + 4).value = 'Daily Breakdown'
+        self.s_ws.cell(self.row_cursor, REPORT_START_COL + 4).value = TABLE_NAME
         self.s_ws.cell(self.row_cursor, REPORT_START_COL + 4).font = BOLD_STYLE
         self.s_ws.freeze_panes = self.s_ws[f'A{REPORT_START_ROW + 2}']
         self.row_cursor += 1
@@ -232,7 +234,7 @@ class COMReport():
 
     def _add_sum_row_below_currency_segment(self):
         '''adds SUM row below currency segment and inserts vertical sums (sum across row dates)
-        segment in rows: {self.currency_segment_start_row}:{self.row_cursor-1}'''
+        segment in rows: {self.ccy_segment_start_row}:{self.row_cursor-1}'''
         self.s_ws.cell(self.row_cursor, REPORT_START_COL).font = BOLD_STYLE
         self.s_ws.cell(self.row_cursor, REPORT_START_COL).fill = BACKGROUND_COLOR_STYLE
         self.s_ws.cell(self.row_cursor, REPORT_START_COL + 1).value = 'SUM'
@@ -245,8 +247,7 @@ class COMReport():
         for c in range(REPORT_START_COL + 2, curr_last_col + 1):
             header = self.s_ws.cell(REPORT_START_ROW + 1, c).value
             if bool(header):
-                tgt_value = self._get_ccy_segment_total(c)
-                self.s_ws.cell(self.row_cursor, c).value = tgt_value if tgt_value > 0 else ''
+                self.s_ws.cell(self.row_cursor, c).value = sum_formula_total(c, self.ccy_segment_start_row, self.row_cursor-1)
 
             # if column name (row 2) does not contain '#', format as number
             if not '#' in header:
@@ -257,7 +258,7 @@ class COMReport():
     def _get_ccy_segment_total(self, c: int):
         '''returns segment total, summing across rows for specific column (arg: c)'''
         total = 0.0
-        for r in range(self.currency_segment_start_row, self.row_cursor):
+        for r in range(self.ccy_segment_start_row, self.row_cursor):
             try:
                 cell_value = float(self.s_ws.cell(r, c).value)
             except (ValueError, TypeError):
@@ -350,7 +351,7 @@ class COMReport():
         self.__enter_header_bold_update_col_widths(REPORT_START_ROW + 1, ref_col + 1, f'{country} #')
         self.__enter_header_bold_update_col_widths(REPORT_START_ROW + 1, ref_col + 2, f'{country} Taxes')
         # # gap column between countries
-        self.__enter_header_bold_update_col_widths(REPORT_START_ROW + 1, ref_col + 3, ' ')
+        self.__enter_header_bold_update_col_widths(REPORT_START_ROW + 1, ref_col + 3, '')
         # Update cls col reference dict
         self.eu_countries_header_cols[country] = ref_col
     

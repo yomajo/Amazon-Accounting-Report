@@ -171,6 +171,17 @@ def get_backup_f_abspath(src_files_folder:str, backup_fname_prefix:str, ext:str)
     backup_fname = f'{backup_fname_prefix} {timestamp}{ext}'
     return os.path.join(src_files_folder, backup_fname)
 
+def sum_formula_taxes_country(col: int, start_row: int, end_row: int) -> str:
+    '''returns excel formula as string summing two ranges for country total + taxes'''
+    total_let = col_to_letter(col, zero_indexed=False)
+    tax_let = col_to_letter(col+2, zero_indexed=False)
+    return f'=SUM({total_let}{start_row}:{total_let}{end_row})+SUM({tax_let}{start_row}:{tax_let}{end_row})'
+
+def sum_formula_total(col: int, start_row: int, end_row: int) -> str:
+    '''returns excel formula as string summing a range in col'''
+    col_let = col_to_letter(col, zero_indexed=False)
+    return f'=SUM({col_let}{start_row}:{col_let}{end_row})'
+
 
 if __name__ == "__main__":
     pass

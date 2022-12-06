@@ -3,10 +3,12 @@ from collections import defaultdict
 import openpyxl
 from constants import TEMPLATE_SHEET_MAPPING, EU_SUMMARY_HEADERS
 from accounting_utils import simplify_date, col_to_letter, get_last_used_row_col
+from accounting_utils import sum_formula_taxes_country, sum_formula_total
 
 
 # GLOBAL VARIABLES
 SUMMARY_SHEET_NAME = 'Summary'
+TABLE_NAME = 'Daily Breakdown'
 BOLD_STYLE = openpyxl.styles.Font(bold=True, name='Calibri')
 BACKGROUND_COLOR_STYLE = openpyxl.styles.PatternFill(fgColor='D6DEFF',fill_type='solid')
 THIN_BORDER = openpyxl.styles.Side(border_style='thin')
@@ -201,7 +203,8 @@ class EUReport():
         self._add_summary_headers()
         # Add data for each currency:
         for currency, date_objs in self.summary_table_obj.items():
-            self.currency_segment_start_row = self.row_cursor
+            self.ccy_segment_start_row = self.row_cursor
+            
             self._apply_horizontal_line(self.row_cursor)
             self.s_ws.cell(self.row_cursor, REPORT_START_COL).value = currency
             self.s_ws.cell(self.row_cursor, REPORT_START_COL).font = BOLD_STYLE
@@ -223,7 +226,7 @@ class EUReport():
 
     def _add_summary_headers(self):
         '''writes fixed headers in summary sheet, freeze panes'''
-        self.s_ws.cell(self.row_cursor, REPORT_START_COL + 4).value = 'Daily Breakdown'
+        self.s_ws.cell(self.row_cursor, REPORT_START_COL + 4).value = TABLE_NAME
         self.s_ws.cell(self.row_cursor, REPORT_START_COL + 4).font = BOLD_STYLE
         self.s_ws.freeze_panes = self.s_ws[f'C{REPORT_START_ROW + 2}']
         self.row_cursor += 1
@@ -235,7 +238,7 @@ class EUReport():
 
     def _add_sum_row_below_currency_segment(self):
         '''adds SUM row below currency segment and inserts vertical sums (sum across row dates)
-        segment in rows: {self.currency_segment_start_row}:{self.row_cursor-1}'''
+        segment in rows: {self.ccy_segment_start_row}:{self.row_cursor-1}'''
         self.s_ws.cell(self.row_cursor, REPORT_START_COL).font = BOLD_STYLE
         self.s_ws.cell(self.row_cursor, REPORT_START_COL).fill = BACKGROUND_COLOR_STYLE
         self.s_ws.cell(self.row_cursor, REPORT_START_COL + 1).value = 'SUM'
@@ -246,33 +249,24 @@ class EUReport():
         curr_last_col = current_limits['max_col']
 
         for c in range(REPORT_START_COL + 2, curr_last_col + 1):
+            # first row that contains country code since 11 col, used to identify col for total+tax summation
             header_1 = self.s_ws.cell(REPORT_START_ROW, c).value
             header_2 = self.s_ws.cell(REPORT_START_ROW + 1, c).value
-            if bool(header_1):
+            if bool(header_1) and header_1 != TABLE_NAME:
                 # country column: add total + taxes
-                tgt_value = self._get_ccy_segment_total(c) + self._get_ccy_segment_total(c + 2)
-                self.s_ws.cell(self.row_cursor, c).value = tgt_value if tgt_value > 0 else ''
+                self.s_ws.cell(self.row_cursor, c).value = sum_formula_taxes_country(c, self.ccy_segment_start_row, self.row_cursor-1)
                 self.s_ws.cell(self.row_cursor, c).font = BOLD_STYLE
+            elif header_2 == '':
+                # blank sum for blank column header
+                pass
             else:
-                tgt_value = self._get_ccy_segment_total(c)
-                self.s_ws.cell(self.row_cursor, c).value = tgt_value if tgt_value > 0 else ''
+                self.s_ws.cell(self.row_cursor, c).value = sum_formula_total(c, self.ccy_segment_start_row, self.row_cursor-1)
 
             # if column name (row 2) does not contain '#', format as number
             if not '#' in header_2:
                 self.s_ws.cell(self.row_cursor, c).number_format = '#,##0.00'
             self.s_ws.cell(self.row_cursor, c).fill = BACKGROUND_COLOR_STYLE
         self.row_cursor += 1
-
-    def _get_ccy_segment_total(self, c: int):
-        '''returns segment total, summing across rows for specific column (arg: c)'''
-        total = 0.0
-        for r in range(self.currency_segment_start_row, self.row_cursor):
-            try:
-                cell_value = float(self.s_ws.cell(r, c).value)
-            except (ValueError, TypeError):
-                cell_value = 0
-            total += cell_value
-        return round(total, 2)
 
     def _color_table_headers(self):
         '''Colors range defined in generator in summary sheet'''
@@ -368,7 +362,7 @@ class EUReport():
         self.__enter_header_bold_update_col_widths(REPORT_START_ROW + 1, ref_col + 1, f'{country} #')
         self.__enter_header_bold_update_col_widths(REPORT_START_ROW + 1, ref_col + 2, f'{country} Taxes')
         # # gap column between countries
-        self.__enter_header_bold_update_col_widths(REPORT_START_ROW + 1, ref_col + 3, ' ')
+        self.__enter_header_bold_update_col_widths(REPORT_START_ROW + 1, ref_col + 3, '')
         # Update cls col reference dict
         self.eu_countries_header_cols[country] = ref_col
     
