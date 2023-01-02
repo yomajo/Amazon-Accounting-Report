@@ -254,7 +254,9 @@ class EUReport():
             header_2 = self.s_ws.cell(REPORT_START_ROW + 1, c).value
             if bool(header_1) and header_1 != TABLE_NAME:
                 # country column: add total + taxes
-                self.s_ws.cell(self.row_cursor, c).value = sum_formula_taxes_country(c, self.ccy_segment_start_row, self.row_cursor-1)
+                # sum EU countries total + taxes discontinued 2023-01
+                # self.s_ws.cell(self.row_cursor, c).value = sum_formula_taxes_country(c, self.ccy_segment_start_row, self.row_cursor-1)
+                self.s_ws.cell(self.row_cursor, c).value = sum_formula_total(c, self.ccy_segment_start_row, self.row_cursor-1)
                 self.s_ws.cell(self.row_cursor, c).font = BOLD_STYLE
             elif header_2 == '':
                 # blank sum for blank column header
