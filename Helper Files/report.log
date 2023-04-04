@@ -177,3 +177,18 @@ INFO:root:Total of 1515 new orders have been added to database, after exports we
 INFO:root:
 RUN ENDED: 2023.01.02 19:14
 
+INFO:root:
+ NEW RUN STARTING: 2023.04.04 19:14
+WARNING:root:--- RUNNING IN TESTING MODE. Using hardcoded args---
+INFO:root:EU 2022.09.02.txt detected encoding: utf-8, delimiter <	>
+INFO:root:Loaded EU 2022.09.02.txt has 2449 raw orders. Filtering out todays orders...
+INFO:root:Filter date used in program: 2023-04-04 00:00:00. Passing to vba and logging strftime format: 2023-04-04
+INFO:root:Orders passed today date filtering: 2449/2449
+INFO:root:Returning 2449/2449 new/loaded orders for further processing
+INFO:root:Loaded file contains: 2449 (before 2023-04-04 date filter. Further processing: 2449 orders
+INFO:root:Running in testing True environment. Change behaviour in export_orders method in ParseOrders class
+INFO:root:Passing orders to create report with EUReport class
+INFO:root:XLSX report AmazonEU Report 2023.04.04 19.14.xlsx successfully created.
+INFO:root:
+RUN ENDED: 2023.04.04 19:14
+

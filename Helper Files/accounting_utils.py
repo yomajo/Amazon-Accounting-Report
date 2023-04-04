@@ -182,6 +182,17 @@ def sum_formula_total(col: int, start_row: int, end_row: int) -> str:
     col_let = col_to_letter(col, zero_indexed=False)
     return f'=SUM({col_let}{start_row}:{col_let}{end_row})'
 
+def is_gb_uk_order(country_code: str, zip_code: str) -> bool:
+    '''returns True if country is uk/gb and postcode does not belong to Northern Ireland
+    NOTE: currently not used'''
+    if country_code.upper() in ['GB', 'UK']:
+        capitalized_zip = zip_code.upper()
+        if capitalized_zip.startswith('BT') or capitalized_zip.startswith('GY'):
+            return False
+        else:
+            return True
+    return False
+
 
 if __name__ == "__main__":
     pass

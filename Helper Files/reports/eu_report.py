@@ -107,7 +107,7 @@ class EUReport():
         return payment_date_orders
 
     def _get_summary_taxes_obj(self):
-        '''Returns currency and date based calculated taxes for UK orders (item-tax + shipping)
+        '''Returns currency and date based calculated taxes for UK orders (item-tax + shipping-tax)
         
         self.summary_table_obj:
         {'EUR':{'date1':[order1, order2...], 'date2':[order3, order4...], ...},
@@ -210,13 +210,14 @@ class EUReport():
             self.s_ws.cell(self.row_cursor, REPORT_START_COL).font = BOLD_STYLE
             # Writing data to rest of columns:
             for date, date_orders in date_objs.items():
-                self.cached_non_vat_total = 0
+                self.cached_non_vat_total_for_date = 0
                 self.s_ws.cell(self.row_cursor, REPORT_START_COL + 1).value = date
                 self._fill_format_date_data(date_orders)
                 
-                uk_tax = self.summary_taxes_obj[currency][date]
-                self.s_ws.cell(self.row_cursor, REPORT_START_COL + 7).value = uk_tax
-                self.s_ws.cell(self.row_cursor, REPORT_START_COL + 8).value = self.cached_non_vat_total - uk_tax
+                gb_tax = self.summary_taxes_obj[currency][date]
+                self.s_ws.cell(self.row_cursor, REPORT_START_COL + 8).value = gb_tax
+                # delete below col "NON-VAT - UK Taxes"?
+                self.s_ws.cell(self.row_cursor, REPORT_START_COL + 9).value = self.cached_non_vat_total_for_date - gb_tax
                 self.row_cursor += 1
 
             self._add_sum_row_below_currency_segment()
@@ -298,29 +299,39 @@ class EUReport():
         self.s_ws.cell(self.row_cursor, REPORT_START_COL + 2).number_format = '#,##0.00'
         self.s_ws.cell(self.row_cursor, REPORT_START_COL + 3).value = len(date_orders)
         self.s_ws.cell(self.row_cursor, REPORT_START_COL + 3).font = BOLD_STYLE
+
         # Separating regions, filling data:
-        eu_orders, non_eu_orders = self._split_by_region(date_orders)
-        self.cached_non_vat_total = self._get_segment_total(non_eu_orders)
-        self.s_ws.cell(self.row_cursor, REPORT_START_COL + 4).value = self.cached_non_vat_total
+        eu_orders, non_eu_orders, gb_orders = self._split_by_region(date_orders)
+
+        self.cached_non_vat_total_for_date = self._get_segment_total(non_eu_orders)
+        self.s_ws.cell(self.row_cursor, REPORT_START_COL + 4).value = self.cached_non_vat_total_for_date
         self.s_ws.cell(self.row_cursor, REPORT_START_COL + 4).number_format = '#,##0.00'
         self.s_ws.cell(self.row_cursor, REPORT_START_COL + 5).value = len(non_eu_orders)
+
+        self.s_ws.cell(self.row_cursor, REPORT_START_COL + 6).value = self._get_segment_total(gb_orders)
+        self.s_ws.cell(self.row_cursor, REPORT_START_COL + 6).number_format = '#,##0.00'
+        self.s_ws.cell(self.row_cursor, REPORT_START_COL + 7).value = len(gb_orders)
+
         self._fill_summary_country_columns(eu_orders)
 
-    def _split_by_region(self, orders:list):
+    def _split_by_region(self, orders:list) -> tuple:
         '''splits provided list of orders into two lists based on order['ship-country'] (using proxy keys) EU membership:
         1. eu orders
         2. non-eu orders
+        3. gb orders (add 2023-04)
         NOTE: Specific to AMAZON EU report: orders with tax = 0 are attributed to non-EU'''    
-        eu_orders, non_eu_orders = [], []
+        eu_orders, non_eu_orders, gb_orders = [], [], []
         for order in orders:
-            if order[self.proxy_keys['ship-country']] in self.eu_countries:
+            if order[self.proxy_keys['ship-country']] == 'GB':
+                gb_orders.append(order)
+            elif order[self.proxy_keys['ship-country']] in self.eu_countries:
                 if order[self.proxy_keys['item-tax']] == 0:
                     non_eu_orders.append(order)
                 else:
                     eu_orders.append(order)
             else:
                 non_eu_orders.append(order)
-        return eu_orders, non_eu_orders
+        return eu_orders, non_eu_orders, gb_orders
 
     def _get_segment_total(self, orders: list) -> float:
         '''Returns a sum of all orders' item-price + shipping-price in list of order dicts'''

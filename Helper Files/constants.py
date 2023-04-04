@@ -85,8 +85,9 @@ EU_SUMMARY_HEADERS = ['Currency',
                 'Total #',
                 'NON-VAT',
                 '  #',
-                '',
-                'UK TAXES',
+                'GB TOTAL',
+                ' #',
+                'GB TAXES',
                 'NON-VAT -Taxes',
                 '',]
 
