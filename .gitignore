@@ -9,7 +9,7 @@ dist
 amzn_accounting.db
 amzn_accounting_b4lrun.db
 amzn_accounting_lrun.db
-Ebay Accounting.xlsm
+*Ebay Accounting.xlsm
 *.txt
 *.csv
 *.xlsx
