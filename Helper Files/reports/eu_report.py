@@ -71,7 +71,6 @@ class EUReport():
         '''prepares cls variables for excel report workbook filling'''
         self.segments_orders_obj = self._get_segments_orders_obj(self.export_obj)
         self.summary_table_obj = self._get_summary_table_obj(self.export_obj)
-        self.summary_taxes_obj = self._get_summary_taxes_obj()
 
     def _get_segments_orders_obj(self, export_obj:dict) -> dict:
         '''returns dict of dicts for each segment (sheets) and corresponding list of orders (written to separate sheets)
@@ -106,27 +105,16 @@ class EUReport():
             payment_date_orders[order[self.proxy_keys['payments-date']]].append(order)
         return payment_date_orders
 
-    def _get_summary_taxes_obj(self):
-        '''Returns currency and date based calculated taxes for UK orders (item-tax + shipping-tax)
-        
-        self.summary_table_obj:
-        {'EUR':{'date1':[order1, order2...], 'date2':[order3, order4...], ...},
-        'GBP':{'date1':[order1, order2...], 'date2':[order1, order2...], ...}, ...}
-
-        function returns:
-        {'EUR':{'date1':calculated_taxes1, 'date2':calculated_taxes2, ...},
-        'GBP':{'date1':calculated_taxes3, 'date2':calculated_taxes4, ...}, ...}'''
-        taxes_obj = copy.deepcopy(self.summary_table_obj)
-        for currency, date_orders_dict in self.summary_table_obj.items():
-            for date, date_orders in date_orders_dict.items():
-                taxes_obj[currency][date] = self._calc_orders_taxes(date_orders, 'GB')
-        return taxes_obj
-
-    def _calc_orders_taxes(self, orders:list, country_code:str) -> float:
-        '''returns sum of (item-tax + shipping-tax) for each order inside list if order[ship-country] = country_code'''
+    def _calc_segment_taxes(self, orders:list, country_code:str=None) -> float:
+        '''returns sum of (item-tax + shipping-tax) for each order inside list if order[ship-country] = country_code
+        when country is undefined, calculates taxes for each order in passed list'''
         taxes = 0
         for order in orders:
-            if order[self.proxy_keys['ship-country']] == country_code:
+            if country_code:
+                if order[self.proxy_keys['ship-country']] == country_code:
+                    taxes += order[self.proxy_keys['item-tax']]
+                    taxes += order[self.proxy_keys['shipping-tax']]
+            else:
                 taxes += order[self.proxy_keys['item-tax']]
                 taxes += order[self.proxy_keys['shipping-tax']]
         return round(taxes, 2)
@@ -187,7 +175,7 @@ class EUReport():
 
     def _adjust_col_widths(self, ws, col_widths: dict, summary=False):
         '''iterates over {'A':30, 'B':40, 'C':35...} dict to resize worksheets' column widths. Summary ws wider columns with summary=True'''
-        factor = 1.3 if summary else 1.05
+        factor = 1.15 if summary else 1.05
         for col_letter in col_widths:
             adjusted_width = ((col_widths[col_letter] + 2) * factor)
             ws.column_dimensions[col_letter].width = adjusted_width
@@ -210,14 +198,9 @@ class EUReport():
             self.s_ws.cell(self.row_cursor, REPORT_START_COL).font = BOLD_STYLE
             # Writing data to rest of columns:
             for date, date_orders in date_objs.items():
-                self.cached_non_vat_total_for_date = 0
                 self.s_ws.cell(self.row_cursor, REPORT_START_COL + 1).value = date
+                self._update_col_widths(REPORT_START_COL, str(date))
                 self._fill_format_date_data(date_orders)
-                
-                gb_tax = self.summary_taxes_obj[currency][date]
-                self.s_ws.cell(self.row_cursor, REPORT_START_COL + 8).value = gb_tax
-                # delete below col "NON-VAT - UK Taxes"?
-                self.s_ws.cell(self.row_cursor, REPORT_START_COL + 9).value = self.cached_non_vat_total_for_date - gb_tax
                 self.row_cursor += 1
 
             self._add_sum_row_below_currency_segment()
@@ -290,6 +273,20 @@ class EUReport():
         for col in range(REPORT_START_COL, REPORT_START_COL + 99):
             self.s_ws.cell(row, col).border = openpyxl.styles.Border(top=THIN_BORDER)
     
+    ''' 'Currency',                 1       A
+        '  Date',                   2       B
+        '  Total',                  3       C
+        'Total #',                  4       D
+        
+        'NON-VAT',                  5       E
+        '  #',                      6       F
+        'NON-VAT Taxes',            7       G
+        'NON-VAT excl Taxes',       8       H
+        
+        'GB Total',                 9       I
+        ' #',                       10      J
+        'GB Taxes',                 11      K
+        'GB excl Taxes',            12      L'''
 
     def _fill_format_date_data(self, date_orders: list):
         '''calculates neccessary data and fills, formats data in summary sheet in single row'''
@@ -301,16 +298,38 @@ class EUReport():
         self.s_ws.cell(self.row_cursor, REPORT_START_COL + 3).font = BOLD_STYLE
 
         # Separating regions, filling data:
-        eu_orders, non_eu_orders, gb_orders = self._split_by_region(date_orders)
+        eu_orders, non_eu_orders, gb_orders, nireland_orders = self._split_by_region(date_orders)
 
-        self.cached_non_vat_total_for_date = self._get_segment_total(non_eu_orders)
-        self.s_ws.cell(self.row_cursor, REPORT_START_COL + 4).value = self.cached_non_vat_total_for_date
+        non_vat_total = self._get_segment_total(non_eu_orders)
+        non_vat_taxes = self._calc_segment_taxes(non_eu_orders)
+        self.s_ws.cell(self.row_cursor, REPORT_START_COL + 4).value = non_vat_total
         self.s_ws.cell(self.row_cursor, REPORT_START_COL + 4).number_format = '#,##0.00'
         self.s_ws.cell(self.row_cursor, REPORT_START_COL + 5).value = len(non_eu_orders)
 
-        self.s_ws.cell(self.row_cursor, REPORT_START_COL + 6).value = self._get_segment_total(gb_orders)
+        self.s_ws.cell(self.row_cursor, REPORT_START_COL + 6).value = non_vat_taxes
         self.s_ws.cell(self.row_cursor, REPORT_START_COL + 6).number_format = '#,##0.00'
-        self.s_ws.cell(self.row_cursor, REPORT_START_COL + 7).value = len(gb_orders)
+        
+        self.s_ws.cell(self.row_cursor, REPORT_START_COL + 7).value = non_vat_total - non_vat_taxes
+        self.s_ws.cell(self.row_cursor, REPORT_START_COL + 7).number_format = '#,##0.00'
+
+        gb_total = self._get_segment_total(gb_orders)
+        gb_taxes = self._calc_segment_taxes(gb_orders)
+        self.s_ws.cell(self.row_cursor, REPORT_START_COL + 8).value = gb_total
+        self.s_ws.cell(self.row_cursor, REPORT_START_COL + 8).number_format = '#,##0.00'
+        self.s_ws.cell(self.row_cursor, REPORT_START_COL + 9).value = len(gb_orders)
+
+        self.s_ws.cell(self.row_cursor, REPORT_START_COL + 10).value = gb_taxes
+        self.s_ws.cell(self.row_cursor, REPORT_START_COL + 10).number_format = '#,##0.00'
+        
+        self.s_ws.cell(self.row_cursor, REPORT_START_COL + 11).value = gb_total - gb_taxes
+        self.s_ws.cell(self.row_cursor, REPORT_START_COL + 11).number_format = '#,##0.00'
+
+        self.s_ws.cell(self.row_cursor, REPORT_START_COL + 13).value = self._get_segment_total(nireland_orders)
+        self.s_ws.cell(self.row_cursor, REPORT_START_COL + 13).number_format = '#,##0.00'
+        self.s_ws.cell(self.row_cursor, REPORT_START_COL + 14).value = len(nireland_orders)
+
+        self.s_ws.cell(self.row_cursor, REPORT_START_COL + 15).value = self._calc_segment_taxes(nireland_orders)
+        self.s_ws.cell(self.row_cursor, REPORT_START_COL + 15).number_format = '#,##0.00'
 
         self._fill_summary_country_columns(eu_orders)
 
@@ -320,10 +339,13 @@ class EUReport():
         2. non-eu orders
         3. gb orders (add 2023-04)
         NOTE: Specific to AMAZON EU report: orders with tax = 0 are attributed to non-EU'''    
-        eu_orders, non_eu_orders, gb_orders = [], [], []
+        eu_orders, non_eu_orders, gb_orders, nireland_orders = [], [], [], []
         for order in orders:
             if order[self.proxy_keys['ship-country']] == 'GB':
-                gb_orders.append(order)
+                if order[self.proxy_keys['ship-postal-code']].startswith('BT'):
+                    nireland_orders.append(order)
+                else:
+                    gb_orders.append(order)
             elif order[self.proxy_keys['ship-country']] in self.eu_countries:
                 if order[self.proxy_keys['item-tax']] == 0:
                     non_eu_orders.append(order)
@@ -331,7 +353,7 @@ class EUReport():
                     eu_orders.append(order)
             else:
                 non_eu_orders.append(order)
-        return eu_orders, non_eu_orders, gb_orders
+        return eu_orders, non_eu_orders, gb_orders, nireland_orders
 
     def _get_segment_total(self, orders: list) -> float:
         '''Returns a sum of all orders' item-price + shipping-price in list of order dicts'''
@@ -390,7 +412,7 @@ class EUReport():
         self.s_ws.cell(self.row_cursor, ref_col).value = self._get_segment_total(country_orders)
         self.s_ws.cell(self.row_cursor, ref_col).number_format = '#,##0.00'
         self.s_ws.cell(self.row_cursor, ref_col + 1).value = len(country_orders)
-        self.s_ws.cell(self.row_cursor, ref_col + 2).value = self._calc_orders_taxes(country_orders, country)
+        self.s_ws.cell(self.row_cursor, ref_col + 2).value = self._calc_segment_taxes(country_orders, country)
 
 
     def export(self, wb_name: str):

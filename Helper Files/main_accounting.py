@@ -12,13 +12,13 @@ from constants import SALES_CHANNEL_PROXY_KEYS, VBA_ERROR_ALERT, VBA_KEYERROR_AL
 
 
 TEST_CASES = [
-    {'channel': 'AmazonEU', 'file': r'C:\Coding\Ebay\Working\Backups\Amazon exports\EU 2022.09.02.txt'},
+    {'channel': 'AmazonEU', 'file': r'C:\Coding\Ebay\Working\Backups\Amazon exports\EU 2022.10.04.txt'},
     {'channel': 'AmazonCOM', 'file': r'C:\Coding\Ebay\Working\Backups\Amazon exports\COM 2022.10.04.txt'},
     {'channel': 'Amazon Warehouse', 'file': r'C:\Coding\Ebay\Working\Backups\Amazon warehouse csv\warehouse2.csv'},
 ]
 
 # GLOBAL VARIABLES
-TESTING = True
+TESTING = False
 TEST_CASE = TEST_CASES[0]
 # TEST_TODAY_DATE = '2022-06-27'
 TEST_TODAY_DATE = datetime.now().strftime('%Y-%m-%d')   # Hardcode in format: '2021-08-19' if needed when testing

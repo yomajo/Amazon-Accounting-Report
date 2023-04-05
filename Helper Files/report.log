@@ -192,3 +192,78 @@ INFO:root:XLSX report AmazonEU Report 2023.04.04 19.14.xlsx successfully created
 INFO:root:
 RUN ENDED: 2023.04.04 19:14
 
+INFO:root:
+ NEW RUN STARTING: 2023.04.05 14:22
+WARNING:root:--- RUNNING IN TESTING MODE. Using hardcoded args---
+INFO:root:EU 2022.09.02.txt detected encoding: utf-8, delimiter <	>
+INFO:root:Loaded EU 2022.09.02.txt has 2449 raw orders. Filtering out todays orders...
+INFO:root:Filter date used in program: 2023-04-05 00:00:00. Passing to vba and logging strftime format: 2023-04-05
+INFO:root:Orders passed today date filtering: 2449/2449
+INFO:root:Returning 2449/2449 new/loaded orders for further processing
+INFO:root:Loaded file contains: 2449 (before 2023-04-05 date filter. Further processing: 2449 orders
+INFO:root:Running in testing True environment. Change behaviour in export_orders method in ParseOrders class
+INFO:root:Passing orders to create report with EUReport class
+INFO:root:XLSX report AmazonEU Report 2023.04.05 14.22.xlsx successfully created.
+INFO:root:
+RUN ENDED: 2023.04.05 14:22
+
+INFO:root:
+ NEW RUN STARTING: 2023.04.05 14:35
+WARNING:root:--- RUNNING IN TESTING MODE. Using hardcoded args---
+INFO:root:EU 2022.10.04.txt detected encoding: utf-8, delimiter <	>
+INFO:root:Loaded EU 2022.10.04.txt has 2793 raw orders. Filtering out todays orders...
+INFO:root:Filter date used in program: 2023-04-05 00:00:00. Passing to vba and logging strftime format: 2023-04-05
+INFO:root:Orders passed today date filtering: 2793/2793
+INFO:root:Returning 2771/2793 new/loaded orders for further processing
+INFO:root:Loaded file contains: 2793 (before 2023-04-05 date filter. Further processing: 2771 orders
+INFO:root:Running in testing True environment. Change behaviour in export_orders method in ParseOrders class
+INFO:root:Passing orders to create report with EUReport class
+INFO:root:XLSX report AmazonEU Report 2023.04.05 14.35.xlsx successfully created.
+INFO:root:
+RUN ENDED: 2023.04.05 14:35
+
+INFO:root:
+ NEW RUN STARTING: 2023.04.05 15:38
+WARNING:root:--- RUNNING IN TESTING MODE. Using hardcoded args---
+INFO:root:EU 2022.10.04.txt detected encoding: utf-8, delimiter <	>
+INFO:root:Loaded EU 2022.10.04.txt has 2793 raw orders. Filtering out todays orders...
+INFO:root:Filter date used in program: 2023-04-05 00:00:00. Passing to vba and logging strftime format: 2023-04-05
+INFO:root:Orders passed today date filtering: 2793/2793
+INFO:root:Returning 2771/2793 new/loaded orders for further processing
+INFO:root:Loaded file contains: 2793 (before 2023-04-05 date filter. Further processing: 2771 orders
+INFO:root:Running in testing True environment. Change behaviour in export_orders method in ParseOrders class
+INFO:root:Passing orders to create report with EUReport class
+INFO:root:XLSX report AmazonEU Report 2023.04.05 15.38.xlsx successfully created.
+INFO:root:
+RUN ENDED: 2023.04.05 15:39
+
+INFO:root:
+ NEW RUN STARTING: 2023.04.05 15:43
+WARNING:root:--- RUNNING IN TESTING MODE. Using hardcoded args---
+INFO:root:EU 2022.10.04.txt detected encoding: utf-8, delimiter <	>
+INFO:root:Loaded EU 2022.10.04.txt has 2793 raw orders. Filtering out todays orders...
+INFO:root:Filter date used in program: 2023-04-05 00:00:00. Passing to vba and logging strftime format: 2023-04-05
+INFO:root:Orders passed today date filtering: 2793/2793
+INFO:root:Returning 2771/2793 new/loaded orders for further processing
+INFO:root:Loaded file contains: 2793 (before 2023-04-05 date filter. Further processing: 2771 orders
+INFO:root:Running in testing True environment. Change behaviour in export_orders method in ParseOrders class
+INFO:root:Passing orders to create report with EUReport class
+INFO:root:XLSX report AmazonEU Report 2023.04.05 15.43.xlsx successfully created.
+INFO:root:
+RUN ENDED: 2023.04.05 15:43
+
+INFO:root:
+ NEW RUN STARTING: 2023.04.05 15:45
+WARNING:root:--- RUNNING IN TESTING MODE. Using hardcoded args---
+INFO:root:EU 2022.10.04.txt detected encoding: utf-8, delimiter <	>
+INFO:root:Loaded EU 2022.10.04.txt has 2793 raw orders. Filtering out todays orders...
+INFO:root:Filter date used in program: 2023-04-05 00:00:00. Passing to vba and logging strftime format: 2023-04-05
+INFO:root:Orders passed today date filtering: 2793/2793
+INFO:root:Returning 2771/2793 new/loaded orders for further processing
+INFO:root:Loaded file contains: 2793 (before 2023-04-05 date filter. Further processing: 2771 orders
+INFO:root:Running in testing True environment. Change behaviour in export_orders method in ParseOrders class
+INFO:root:Passing orders to create report with EUReport class
+INFO:root:XLSX report AmazonEU Report 2023.04.05 15.45.xlsx successfully created.
+INFO:root:
+RUN ENDED: 2023.04.05 15:45
+

@@ -76,21 +76,29 @@ TEMPLATE_SHEET_MAPPING= {
         'Shipping Tax' : 'shipping-tax',
         'Purchase' : 'purchase-date',
         'Payment' : 'payments-date',
-        'Country' : 'ship-country'
+        'Country' : 'ship-country',
+        'Zipcode': 'ship-postal-code',
 }
 
-EU_SUMMARY_HEADERS = ['Currency',
-                '  Date ',
-                '  Total',
-                'Total #',
-                'NON-VAT',
-                '  #',
-                'GB TOTAL',
-                ' #',
-                'GB TAXES',
-                'NON-VAT -Taxes',
-                '',]
-
+EU_SUMMARY_HEADERS = [
+    'Currency',
+    '  Date',
+    '  Total',
+    'Total #',
+    'NON-VAT',
+    '  #',
+    'NON-VAT Taxes',
+    'NON-VAT ex.Taxes',
+    'GB Total',
+    ' #',
+    'GB Taxes',
+    'GB ex.Taxes',
+    '',
+    'N.IE',
+    'N.IE #',
+    'N.IE Taxes',
+    '',
+]
 
 COM_SUMMARY_HEADERS = ['Currency',
                 '  Date ',
