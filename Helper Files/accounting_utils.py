@@ -32,12 +32,15 @@ def is_windows_machine() -> bool:
 def orders_column_to_file(orders:list, dict_key:str):
     '''exports a column values of each orders list item for passed dict_key'''
     try:
-        export_data = [order[dict_key] for order in orders]
-        with open(f'export {dict_key}.txt', 'w', encoding='utf-8', newline='\n') as f:
-            f.writelines('\n'.join(export_data))
-        print(f'Data exported to: {os.path.dirname(os.path.abspath(__file__))} folder')
-    except KeyError:
-        print(f'Provided {dict_key} does not exist in passed orders list of dicts')
+        output_dir = get_output_dir()
+        fpath = os.path.join(output_dir, f'export {dict_key}.txt')
+        with open(fpath, 'w', encoding='utf-8', newline='\r\n') as f:
+            for order in orders:
+                f.write(f'{order[dict_key]}\r\n')
+            return fpath
+    except KeyError as e:
+        logging.exception(f'Provided {dict_key} does not exist in passed orders list of dicts')
+        return
 
 def alert_vba_date_count(filter_date, orders_count):
     '''Passing two variables for VBA to display for user in message box'''

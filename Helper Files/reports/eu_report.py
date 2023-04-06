@@ -272,21 +272,6 @@ class EUReport():
         '''adds horizonal line through 100 cols (c=1 case) in summary sheet at argument row top'''
         for col in range(REPORT_START_COL, REPORT_START_COL + 99):
             self.s_ws.cell(row, col).border = openpyxl.styles.Border(top=THIN_BORDER)
-    
-    ''' 'Currency',                 1       A
-        '  Date',                   2       B
-        '  Total',                  3       C
-        'Total #',                  4       D
-        
-        'NON-VAT',                  5       E
-        '  #',                      6       F
-        'NON-VAT Taxes',            7       G
-        'NON-VAT excl Taxes',       8       H
-        
-        'GB Total',                 9       I
-        ' #',                       10      J
-        'GB Taxes',                 11      K
-        'GB excl Taxes',            12      L'''
 
     def _fill_format_date_data(self, date_orders: list):
         '''calculates neccessary data and fills, formats data in summary sheet in single row'''
@@ -341,18 +326,23 @@ class EUReport():
         NOTE: Specific to AMAZON EU report: orders with tax = 0 are attributed to non-EU'''    
         eu_orders, non_eu_orders, gb_orders, nireland_orders = [], [], [], []
         for order in orders:
-            if order[self.proxy_keys['ship-country']] == 'GB':
-                if order[self.proxy_keys['ship-postal-code']].startswith('BT'):
-                    nireland_orders.append(order)
-                else:
-                    gb_orders.append(order)
-            elif order[self.proxy_keys['ship-country']] in self.eu_countries:
-                if order[self.proxy_keys['item-tax']] == 0:
-                    non_eu_orders.append(order)
-                else:
-                    eu_orders.append(order)
-            else:
+            if order[self.proxy_keys['item-tax']] == 0:
                 non_eu_orders.append(order)
+                order['assigned_region'] = 'non_eu'
+            else:
+                if order[self.proxy_keys['ship-country']] == 'GB':
+                    if order[self.proxy_keys['ship-postal-code']].startswith('BT'):
+                        nireland_orders.append(order)
+                        order['assigned_region'] = 'n.ireland'
+                    else:
+                        gb_orders.append(order)
+                        order['assigned_region'] = 'gb'
+                elif order[self.proxy_keys['ship-country']] in self.eu_countries:
+                    eu_orders.append(order)
+                    order['assigned_region'] = 'eu'
+                else:
+                    non_eu_orders.append(order)
+                    order['assigned_region'] = 'non_eu'
         return eu_orders, non_eu_orders, gb_orders, nireland_orders
 
     def _get_segment_total(self, orders: list) -> float:
@@ -413,7 +403,6 @@ class EUReport():
         self.s_ws.cell(self.row_cursor, ref_col).number_format = '#,##0.00'
         self.s_ws.cell(self.row_cursor, ref_col + 1).value = len(country_orders)
         self.s_ws.cell(self.row_cursor, ref_col + 2).value = self._calc_segment_taxes(country_orders, country)
-
 
     def export(self, wb_name: str):
         '''Creates workbook, and exports class objects: segments_orders_obj and summary_table_obj to

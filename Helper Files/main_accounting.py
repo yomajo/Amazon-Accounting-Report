@@ -2,17 +2,17 @@ import logging
 import sys
 import csv
 import os
-from datetime import datetime, date
+from datetime import datetime
 import sqlalchemy.sql.default_comparator    #neccessary for executable packing
 from accounting_utils import get_output_dir, get_datetime_obj, alert_vba_date_count
-from accounting_utils import get_file_encoding_delimiter, delete_file, dump_to_json
+from accounting_utils import get_file_encoding_delimiter, delete_file, dump_to_json, orders_column_to_file
 from parse_orders import ParseOrders
 from orders_db import SQLAlchemyOrdersDB
-from constants import SALES_CHANNEL_PROXY_KEYS, VBA_ERROR_ALERT, VBA_KEYERROR_ALERT, VBA_OK
+from constants import SALES_CHANNEL_PROXY_KEYS, VBA_ERROR_ALERT, VBA_KEYERROR_ALERT, VBA_OK, VBA_COUNTRYLESS_ALERT
 
 
 TEST_CASES = [
-    {'channel': 'AmazonEU', 'file': r'C:\Coding\Ebay\Working\Backups\Amazon exports\EU 2022.10.04.txt'},
+    {'channel': 'AmazonEU', 'file': r'C:\Coding\Ebay\Working\Backups\Amazon exports\AmazonEU 2023.04.06.txt'},
     {'channel': 'AmazonCOM', 'file': r'C:\Coding\Ebay\Working\Backups\Amazon exports\COM 2022.10.04.txt'},
     {'channel': 'Amazon Warehouse', 'file': r'C:\Coding\Ebay\Working\Backups\Amazon warehouse csv\warehouse2.csv'},
 ]
@@ -81,13 +81,24 @@ def remove_todays_orders(orders: list, sales_channel: str, proxy_keys: dict) -> 
         print(VBA_ERROR_ALERT)
         exit()
 
-def get_today_obj():
+def get_today_obj(): 
     '''returns instance of datetime library corresponding to date (no time) for today used in rest of program'''
     if TESTING:
         return datetime.strptime(TEST_TODAY_DATE, '%Y-%m-%d')
     else:
         dt_today_date_only = datetime.today().strftime('%Y-%m-%d')
         return datetime.strptime(dt_today_date_only, '%Y-%m-%d')
+
+def remove_countryless(orders: list, proxy_keys: dict) -> list:
+    '''removes orders w/o defined country, alerts VBA, exports IDs to txt file if present'''
+    logging.debug(f'Before countryless filter: {len(orders)} orders')
+    countryless = list(filter(lambda x: x[proxy_keys['ship-country']] == '', orders))
+    if countryless:
+        logging.info(f'Removed {len(countryless)} country-less orders')
+        fpath = orders_column_to_file(countryless, proxy_keys['secondary-order-id'])
+        print(VBA_COUNTRYLESS_ALERT)
+        logging.info(f'Country-less orders have been exported to txt {fpath} file, VBA alerted. Proceeding...')
+    return list(filter(lambda x: x[proxy_keys['ship-country']] != '', orders))
 
 def parse_args():
     '''returns source_fpath, sales_channel from cli args or hardcoded testing variables'''    
@@ -118,9 +129,12 @@ def main():
     # Get cleaned (filter out today's orders) source orders
     cleaned_source_orders = get_cleaned_orders(source_fpath, sales_channel, proxy_keys)
 
-    db_client = SQLAlchemyOrdersDB(cleaned_source_orders, source_fpath, sales_channel, proxy_keys, testing=TESTING)
+    # dont store / evaluate country-less orders
+    valid_orders = remove_countryless(cleaned_source_orders, proxy_keys)
+
+    db_client = SQLAlchemyOrdersDB(valid_orders, source_fpath, sales_channel, proxy_keys, testing=TESTING)
     new_orders = db_client.get_new_orders_only()
-    logging.info(f'Loaded file contains: {len(cleaned_source_orders)} (before {TEST_TODAY_DATE} date filter. Further processing: {len(new_orders)} orders')
+    logging.info(f'Loaded file contains: {len(cleaned_source_orders)} (b4 {TEST_TODAY_DATE} date and countryless filters. Further processing: {len(new_orders)} orders')
 
     # Parse orders, export target files
     ParseOrders(new_orders, db_client, sales_channel, proxy_keys).export_orders(TESTING)
